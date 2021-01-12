@@ -3,4 +3,5 @@ osquery
 package
 install
 downloads
-
+cmake-build-debug
+.idea
