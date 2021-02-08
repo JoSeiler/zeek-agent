@@ -36,9 +36,9 @@ public:
   virtual Status generateRowList(RowList &row_list) override;
 
   /// \brief Processes the specified event list, generating new rows
-  /// \param event_list A list of Windows events
+  /// \param event_list A list of Winevent events
   /// \return A Status object
-  Status processEvents(const IWineventConsumer::EventList &event_list);
+  Status processEvents(const IWineventConsumer::AuditEventList &event_list);
 
 protected:
   /// \brief Constructor

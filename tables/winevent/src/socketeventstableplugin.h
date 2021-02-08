@@ -6,8 +6,8 @@
 #include <zeek/izeeklogger.h>
 
 namespace zeek {
-/// \brief Provides the process_events table
-class ProcessEventsTablePlugin final : public IVirtualTable {
+/// \brief A virtual table plugin that presents socket events
+class SocketEventsTablePlugin final : public IVirtualTable {
   struct PrivateData;
   std::unique_ptr<PrivateData> d;
 
@@ -21,7 +21,7 @@ public:
                        IZeekLogger &logger);
 
   /// \brief Destructor
-  virtual ~ProcessEventsTablePlugin() override;
+  virtual ~SocketEventsTablePlugin() override;
 
   /// \return The table name
   virtual const std::string &name() const override;
@@ -36,7 +36,7 @@ public:
   virtual Status generateRowList(RowList &row_list) override;
 
   /// \brief Processes the specified event list, generating new rows
-  /// \param event_list A list of Windows events
+  /// \param event_list The list of Windows events
   /// \return A Status object
   Status processEvents(const IWineventConsumer::EventList &event_list);
 
@@ -44,14 +44,13 @@ protected:
   /// \brief Constructor
   /// \param configuration An initialized configuration object
   /// \param logger An initialized logger object
-  ProcessEventsTablePlugin(IZeekConfiguration &configuration,
-                           IZeekLogger &logger);
+  SocketEventsTablePlugin(IZeekConfiguration &configuration,
+                          IZeekLogger &logger);
 
 public:
   /// \brief Generates a single row from the given Windows event
   /// \param event a single Windows event
   /// \return A Status object
-  static Status generateRow(Row &row,
-                            const IWineventConsumer::Event &event);
+  static Status generateRow(Row &row, const IWineventConsumer::Event &event);
 };
 } // namespace zeek

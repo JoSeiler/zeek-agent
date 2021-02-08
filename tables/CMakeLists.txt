@@ -8,6 +8,8 @@ function(zeekAgentTables)
   elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
     add_subdirectory("endpointsecurity")
     add_subdirectory("openbsm")
+  elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
+    add_subdirectory("winevent")
   endif()
 
   add_subdirectory("host_information")
