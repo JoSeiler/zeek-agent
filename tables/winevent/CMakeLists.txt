@@ -8,8 +8,8 @@ function(zeekAgentTablesWinEvent)
             src/socketeventstableplugin.h
             src/socketeventstableplugin.cpp
 
-            src/processeventstableplugin.h
-            src/processeventstableplugin.cpp
+            #src/processeventstableplugin.h
+            #src/processeventstableplugin.cpp
 
             src/wineventservice.h
             src/wineventservice.cpp
@@ -32,16 +32,16 @@ function(zeekAgentTablesWinEvent)
 
     target_link_libraries(zeek_tables INTERFACE zeek_winevent_tables)
 
-    generateZeekAgentTest(
-            SOURCE_TARGET
-            "zeek_winevent_tables"
+    #generateZeekAgentTest(
+    #        SOURCE_TARGET
+    #        "zeek_winevent_tables"
 
-            SOURCES
-            tests/main.cpp
+    #        SOURCES
+    #        tests/main.cpp
 
-            tests/socketeventstableplugin.cpp
-            tests/processeventstableplugin.cpp
-    )
+    #        tests/socketeventstableplugin.cpp
+    #        tests/processeventstableplugin.cpp
+    #)
 endfunction()
 
 zeekAgentTablesWinEvent()

@@ -6,7 +6,7 @@
 #include <zeek/izeeklogger.h>
 
 namespace zeek {
-/// \brief A virtual table plugin that presents socket events
+/// \brief Provides the file_events table
 class SocketEventsTablePlugin final : public IVirtualTable {
   struct PrivateData;
   std::unique_ptr<PrivateData> d;
@@ -36,7 +36,7 @@ public:
   virtual Status generateRowList(RowList &row_list) override;
 
   /// \brief Processes the specified event list, generating new rows
-  /// \param event_list The list of Windows events
+  /// \param event_list A list of EndpointSecurity events
   /// \return A Status object
   Status processEvents(const IWineventConsumer::EventList &event_list);
 
@@ -48,9 +48,9 @@ protected:
                           IZeekLogger &logger);
 
 public:
-  /// \brief Generates a single row from the given Windows event
-  /// \param event a single Windows event
+  /// \brief Generates a single row from the given EndpointSecurity event
+  /// \param event a single EndpointSecurity event
   /// \return A Status object
-  static Status generateRow(Row &row, const IWineventConsumer::Event &event);
+  static Status generateRow(Row &row, const IWineventConsumer::WELEvent &event);
 };
 } // namespace zeek

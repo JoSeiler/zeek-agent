@@ -18,7 +18,7 @@ function(zeekAgentComponentsWinEvent)
             zeek_logger
             zeek_configuration
 
-            thirdparty_winevent
+            #thirdparty_winevent
             )
 
     target_include_directories("${PROJECT_NAME}"
@@ -29,14 +29,14 @@ function(zeekAgentComponentsWinEvent)
             SYSTEM INTERFACE include
             )
 
-    generateZeekAgentTest(
-            SOURCE_TARGET
-            "${PROJECT_NAME}"
-
-            SOURCES
-            tests/main.cpp
-            tests/wineventconsumer.cpp
-    )
+    #generateZeekAgentTest(
+    #        SOURCE_TARGET
+    #        "${PROJECT_NAME}"
+    #
+    #        SOURCES
+    #        tests/main.cpp
+    #        tests/wineventconsumer.cpp
+    #)
 endfunction()
 
 zeekAgentComponentsWinEvent()

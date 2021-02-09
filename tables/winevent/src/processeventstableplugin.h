@@ -38,7 +38,7 @@ public:
   /// \brief Processes the specified event list, generating new rows
   /// \param event_list A list of Winevent events
   /// \return A Status object
-  Status processEvents(const IWineventConsumer::AuditEventList &event_list);
+  Status processEvents(const IWineventConsumer::EventList &event_list);
 
 protected:
   /// \brief Constructor
@@ -51,7 +51,6 @@ public:
   /// \brief Generates a single row from the given Windows event
   /// \param event a single Windows event
   /// \return A Status object
-  static Status generateRow(Row &row,
-                            const IWineventConsumer::Event &event);
+  static Status generateRow(Row &row, const IWineventConsumer::WELEvent &event);
 };
 } // namespace zeek

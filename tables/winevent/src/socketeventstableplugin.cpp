@@ -20,9 +20,9 @@ struct SocketEventsTablePlugin::PrivateData final {
 Status SocketEventsTablePlugin::create(Ref &obj,
                                        IZeekConfiguration &configuration,
                                        IZeekLogger &logger) {
+
   try {
-    auto ptr = new SocketEventsTablePlugin(configuration, logger);
-    obj.reset(ptr);
+    obj.reset(new SocketEventsTablePlugin(configuration, logger));
 
     return Status::success();
 
@@ -45,10 +45,7 @@ const std::string &SocketEventsTablePlugin::name() const {
 const SocketEventsTablePlugin::Schema &SocketEventsTablePlugin::schema() const {
 
   static const Schema kTableSchema = {
-      //Todo
-      { "string_column", IVirtualTable::ColumnType::String },
-      { "integer_column", IVirtualTable::ColumnType::Integer },
-      { "double_column", IVirtualTable::ColumnType::Double }
+      {"test", IVirtualTable::ColumnType::String}
   };
 
   return kTableSchema;
@@ -105,15 +102,17 @@ Status SocketEventsTablePlugin::processEvents(
 SocketEventsTablePlugin::SocketEventsTablePlugin(
     IZeekConfiguration &configuration, IZeekLogger &logger)
     : d(new PrivateData(configuration, logger)) {
-
   d->max_queued_row_count = d->configuration.maxQueuedRowCount();
 }
 
-Status SocketEventsTablePlugin::generateRow(
-    Row &row, const IWineventConsumer::Event &event) {
+Status
+SocketEventsTablePlugin::generateRow(Row &row,
+                                     const IWineventConsumer::WELEvent &event) {
+
   row = {};
 
   //Todo
+  row ["test"] = event.test;
 
   return Status::success();
 }

@@ -9,6 +9,7 @@ Status registerWineventServiceFactory(IZeekServiceManager &service_manager,
   WineventServiceFactory::Ref winevent_service_factory;
   auto status = WineventServiceFactory::create(
       winevent_service_factory, virtual_database, configuration, logger);
+
   if (!status.succeeded()) {
     return status;
   }

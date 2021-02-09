@@ -3,7 +3,6 @@
 #include <memory>
 #include <variant>
 #include <vector>
-#include <unistd.h>
 
 #include <zeek/izeekconfiguration.h>
 #include <zeek/izeeklogger.h>
@@ -13,10 +12,17 @@ namespace zeek {
 /// \brief Winevent consumer (interface)
 class IWineventConsumer {
 public:
+  /// \brief WEL Event data
+  struct WELEvent final {
+    //Todo define WELevent structure
+    /// \brief test
+    std::string test;
+  };
 
-  /// \brief A list of events
-  using EventList = std::vector<Event>;
+  /// \brief A list of WEL events
+  using EventList = std::vector<WELEvent>;
 
+  /// \brief A unique_ptr to an IWineventConsumer
   using Ref = std::unique_ptr<IWineventConsumer>;
 
   /// \brief Factory method
@@ -25,7 +31,7 @@ public:
   /// \param configuration an initialized configuration object
   /// \return A Status object
   static Status create(Ref &obj, IZeekLogger &logger,
-                       IZeekConfiguration &configuration)
+                       IZeekConfiguration &configuration);
 
   /// \brief Constructor
   IWineventConsumer() = default;

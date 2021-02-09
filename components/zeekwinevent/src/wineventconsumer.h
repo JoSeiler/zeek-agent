@@ -4,7 +4,8 @@
 #include <optional>
 #include <vector>
 
-#include <zeek/iwindowseventconsumer.h>
+#include <zeek/iwineventconsumer.h>
+#include <zeek/status.h>
 
 namespace zeek {
 class WineventConsumer final : public IWineventConsumer {
@@ -23,8 +24,6 @@ private:
 
   /// \brief Constructor
   WineventConsumer(IZeekLogger &logger, IZeekConfiguration &configuration);
-
-
 
 public:
   friend class IWineventConsumer;

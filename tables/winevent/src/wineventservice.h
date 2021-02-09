@@ -5,7 +5,7 @@
 #include <zeek/izeekservicemanager.h>
 
 namespace zeek {
-/// \brief An Zeek service that acts as windows event publisher
+/// \brief An Zeek service that acts as Windows event publisher
 ///        using Todo
 class WineventService final : public IZeekService {
   struct PrivateData;

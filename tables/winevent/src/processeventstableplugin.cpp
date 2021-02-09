@@ -112,8 +112,7 @@ ProcessEventsTablePlugin::ProcessEventsTablePlugin(
   d->max_queued_row_count = d->configuration.maxQueuedRowCount();
 }
 
-Status ProcessEventsTablePlugin::generateRow(
-    Row &row, const IAudispConsumer::AuditEvent &audit_event) {
+Status ProcessEventsTablePlugin::generateRow(Row &row, const IWineventConsumer::WELEvent &event) {
   row = {};
 
   //Todo
