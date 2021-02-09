@@ -18,9 +18,13 @@ struct WineventConsumer::PrivateData final {
   EventList event_list;
   std::mutex event_list_mutex;
   std::condition_variable event_list_cv;
-
-  //std::atomic_bool terminate_producer{false};
 };
+
+WineventConsumer::WineventConsumer(IZeekLogger &logger,
+                                 IZeekConfiguration &configuration)
+    : d(new PrivateData(logger, configuration)) {
+
+}
 
 WineventConsumer::~WineventConsumer() {
 
