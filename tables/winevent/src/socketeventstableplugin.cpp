@@ -5,6 +5,7 @@
 #include <mutex>
 
 namespace zeek {
+
 struct SocketEventsTablePlugin::PrivateData final {
   PrivateData(IZeekConfiguration &configuration_, IZeekLogger &logger_)
       : configuration(configuration_), logger(logger_) {}
@@ -45,7 +46,8 @@ const std::string &SocketEventsTablePlugin::name() const {
 const SocketEventsTablePlugin::Schema &SocketEventsTablePlugin::schema() const {
 
   static const Schema kTableSchema = {
-      {"test", IVirtualTable::ColumnType::String}
+      {"test", IVirtualTable::ColumnType::String},
+      {"event_id", IVirtualTable::ColumnType::Integer}
   };
 
   return kTableSchema;
@@ -105,14 +107,17 @@ SocketEventsTablePlugin::SocketEventsTablePlugin(
   d->max_queued_row_count = d->configuration.maxQueuedRowCount();
 }
 
-Status
-SocketEventsTablePlugin::generateRow(Row &row,
-                                     const IWineventConsumer::WELEvent &event) {
+Status SocketEventsTablePlugin::generateRow(Row &row,
+                                     const IWineventConsumer::Event &event) {
 
   row = {};
+  auto x = event;
 
   //Todo
-  row ["test"] = event.test;
+  //row ["test"] = event.test;
+  //row ["event_id"] = event.event_id;
+  row ["test"] = "asdf";
+  row ["event_id"] = "1";
 
   return Status::success();
 }

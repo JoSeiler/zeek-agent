@@ -54,8 +54,9 @@ Status WineventService::exec(std::atomic_bool &terminate) {
     auto &socket_events_table_impl =
         *static_cast<SocketEventsTablePlugin *>(d->socket_events_table.get());
 
-    IWineventConsumer::EventList event_list;
+    //auto status = d->winevent_consumer->p
 
+    IWineventConsumer::EventList event_list;
     d->winevent_consumer->getEvents(event_list);
 
     if (event_list.empty()) {
@@ -79,8 +80,10 @@ WineventService::WineventService(IVirtualDatabase &virtual_database,
                                IZeekLogger &logger)
     : d(new PrivateData(virtual_database, configuration, logger)) {
 
+  std::string channel = "makethisselectable";
+
   auto status =
-      IWineventConsumer::create(d->winevent_consumer, logger, configuration);
+      IWineventConsumer::create(d->winevent_consumer, logger, configuration, channel);
 
   if (!status.succeeded()) {
     d->logger.logMessage(IZeekLogger::Severity::Error,
