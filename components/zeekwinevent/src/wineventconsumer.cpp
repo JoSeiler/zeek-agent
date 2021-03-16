@@ -40,7 +40,7 @@ DWORD WINAPI EvtSubscriptionCallbackDispatcher(
 
     return 0;
   }
-  
+
   subscription.processEvent(event);
   return 0U;
 }

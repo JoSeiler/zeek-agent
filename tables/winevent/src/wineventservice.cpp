@@ -78,7 +78,7 @@ WineventService::WineventService(IVirtualDatabase &virtual_database,
                                IZeekLogger &logger)
     : d(new PrivateData(virtual_database, configuration, logger)) {
 
-  std::string channel = "makethisselectable";
+  std::string channel = "makethisselectable"; //todo
 
   auto status =
       IWineventConsumer::create(d->winevent_consumer, logger, configuration, channel);

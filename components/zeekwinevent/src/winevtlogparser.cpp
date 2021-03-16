@@ -91,7 +91,7 @@ Status parseWindowsEventLogPTree(WELEvent& windows_event,
   windows_event = {};
 
   WELEvent output;
-  output.osquery_time = std::time(nullptr);
+  output.zeek_time = std::time(nullptr);
 
   output.datetime =
       event_object.get("Event.System.TimeCreated.<xmlattr>.SystemTime", "");

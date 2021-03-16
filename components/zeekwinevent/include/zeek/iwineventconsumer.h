@@ -17,7 +17,7 @@ namespace zeek {
 
 /// \brief WEL Event data
 struct WELEvent final {
-  std::time_t osquery_time{0U};
+  std::time_t zeek_time{0U};
   std::string datetime;
 
   std::string source;

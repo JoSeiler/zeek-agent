@@ -47,8 +47,22 @@ const std::string &SocketEventsTablePlugin::name() const {
 const SocketEventsTablePlugin::Schema &SocketEventsTablePlugin::schema() const {
 
   static const Schema kTableSchema = {
-      {"test", IVirtualTable::ColumnType::String},
-      {"event_id", IVirtualTable::ColumnType::Integer}
+      {"zeek_time", IVirtualTable::ColumnType::Integer},
+      {"date_time", IVirtualTable::ColumnType::Integer},
+
+      {"source", IVirtualTable::ColumnType::String},
+      {"provider_name", IVirtualTable::ColumnType::String},
+      {"provider_guid", IVirtualTable::ColumnType::String},
+      {"computer_name", IVirtualTable::ColumnType::String},
+
+      {"event_id", IVirtualTable::ColumnType::Integer},
+      {"task_id", IVirtualTable::ColumnType::Integer},
+      {"level", IVirtualTable::ColumnType::Integer},
+      {"pid", IVirtualTable::ColumnType::Integer},
+      {"tid", IVirtualTable::ColumnType::Integer},
+
+      {"keywords", IVirtualTable::ColumnType::Integer},
+      {"data", IVirtualTable::ColumnType::Integer}
   };
 
   return kTableSchema;
@@ -114,13 +128,34 @@ Status SocketEventsTablePlugin::generateRow(Row &row,
   row = {};
   auto x = event;
 
-  std::cout << "Here's event.data in socketeventstable: " << event.data << "\n";
+  std::cout << "event_id: " << event.event_id << "\n";
+
+  if (event.event_id != 5156)
+  {
+    return Status::success();
+  }
+
+  //std::cout << "Here's event.data in socketeventstable: " << event.data << "\n";
 
   //Todo
-  //row ["test"] = event.test;
-  //row ["event_id"] = event.event_id;
-  row ["test"] = "asdf";
-  row ["event_id"] = "1";
+  row["zeek_time"] = event.zeek_time;
+  row["date_time"] = event.datetime;
+
+  row["source"] = event.source;
+  row["provider_name"] = event.provider_name;
+  row["provider_guid"] = event.provider_guid;
+  row["computer"] = event.zeek_time;
+
+  row["event_id"] = event.event_id;
+  row["task_id"] = event.task_id;
+  row["level"] = event.level;
+  row["pid"] = event.pid;
+  row["tid"] = event.tid;
+
+  row["keywords"] = event.keywords;
+  row["data"] = event.data; // todo maybe split up data
+
+  std::cout << "successfull " << "\n";
 
   return Status::success();
 }
