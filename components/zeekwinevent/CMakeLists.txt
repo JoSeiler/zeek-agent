@@ -3,32 +3,32 @@ project("zeek_winevent")
 
 function(zeekAgentComponentsWinEvent)
 
-    #set (BOOST_ROOT "C:/Program Files/libs/boost_1_75_0")
-    #set (BOOST_INCLUDEDIR "C:/Program Files/libs/boost_1_75_0")
-    #set (BOOST_LIBRARYDIR "C:/Program Files/libs/boost_1_75_0/lib")
-    #set (BOOST_MIN_VERSION "1.75.0")
-    #set (Boost_NO_BOOST_CMAKE ON)
+    set (BOOST_ROOT "C:/Program Files/libs/boost_1_75_0")
+    set (BOOST_INCLUDEDIR "C:/Program Files/libs/boost_1_75_0")
+    set (BOOST_LIBRARYDIR "C:/Program Files/libs/boost_1_75_0/lib")
+    set (BOOST_MIN_VERSION "1.75.0")
+    set (Boost_NO_BOOST_CMAKE ON)
 
-    #find_package(Boost ${BOOST_MIN_VERSION} REQUIRED)
+    find_package(Boost ${BOOST_MIN_VERSION} REQUIRED)
 
-    #if (NOT Boost_FOUND)
-    #    message(FATAL_ERROR "Fatal error: Boost (version >= 1.75) required.")
-    #else()
-    #    message(STATUS "Setting up BOOST")
-    #    message(STATUS " Includes - ${Boost_INCLUDE_DIRS}")
-    #    message(STATUS " Library  - ${Boost_LIBRARY_DIRS}")
-    #    include_directories(${Boost_INCLUDE_DIRS})
-    #    link_directories(${Boost_LIBRARY_DIRS})
-    #endif (NOT Boost_FOUND)
+    if (NOT Boost_FOUND)
+        message(FATAL_ERROR "Fatal error: Boost (version >= 1.75) required.")
+    else()
+        message(STATUS "Setting up BOOST")
+        message(STATUS " Includes - ${Boost_INCLUDE_DIRS}")
+        message(STATUS " Library  - ${Boost_LIBRARY_DIRS}")
+        include_directories(${Boost_INCLUDE_DIRS})
+        link_directories(${Boost_LIBRARY_DIRS})
+    endif (NOT Boost_FOUND)
 
     add_library("${PROJECT_NAME}"
             include/zeek/iwineventconsumer.h
 
-            #src/windows_utils.h
-            #src/windows_utils.cpp
+            src/windows_utils.h
+            src/windows_utils.cpp
 
-            #src/winevtlogparser.h
-            #src/winevtlogparser.cpp
+            src/winevtlogparser.h
+            src/winevtlogparser.cpp
 
             src/wineventconsumer.h
             src/wineventconsumer.cpp
