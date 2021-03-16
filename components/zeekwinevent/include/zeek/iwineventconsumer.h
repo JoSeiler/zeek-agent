@@ -4,39 +4,40 @@
 #include <variant>
 #include <vector>
 
+#include <ctime>
+#include <windows.h>
+#include <winevt.h>
 #include <zeek/izeekconfiguration.h>
 #include <zeek/izeeklogger.h>
 #include <zeek/status.h>
-#include <windows.h>
-#include <winevt.h>
 
 #pragma comment(lib, "wevtapi.lib")
 
 namespace zeek {
+
+/// \brief WEL Event data
+struct WELEvent final {
+  std::time_t osquery_time{0U};
+  std::string datetime;
+
+  std::string source;
+  std::string provider_name;
+  std::string provider_guid;
+  std::string computer_name;
+
+  std::int64_t event_id{0U};
+  std::int64_t task_id{0U};
+  std::int64_t level{0U};
+  std::int64_t pid{0U};
+  std::int64_t tid{0U};
+
+  std::string keywords;
+  std::string data;
+};
+
 /// \brief Winevent consumer (interface)
 class IWineventConsumer {
 public:
-  /// \brief WEL Event data
-  struct WELEvent final {
-    //Todo define WELevent structure
-    /// \brief test
-    std::string provider_name;
-    std::int64_t event_id{0u};
-    std::int64_t version{0u};
-    std::int64_t level{0u};
-    std::int64_t task{0u};
-    std::int64_t opcode{0u};
-    std::string keywords;
-    std::string time_created;
-    std::int64_t event_record_id{0u};
-    std::int64_t process_id{0u};
-    std::int64_t threat_id {0u};
-
-    std::string data;
-
-
-    std::string test;
-  };
 
   /// \brief A list of WEL events
   using Event = std::wstring;

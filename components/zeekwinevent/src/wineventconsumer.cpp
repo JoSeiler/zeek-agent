@@ -1,5 +1,6 @@
 #include "wineventconsumer.h"
 #include "windows_utils.h"
+#include "winevtlogparser.h"
 
 #include <cerrno>
 #include <chrono>
@@ -8,6 +9,11 @@
 #include <future>
 #include <iomanip>
 #include <iostream>
+#include <boost/algorithm/string.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+
+namespace pt = boost::property_tree;
 
 namespace zeek {
 
@@ -166,15 +172,25 @@ Status WineventConsumer::processEvent(EVT_HANDLE event) {
   }
 
   //Todo parse events
+  pt::ptree propTree;
+  WELEvent windows_event;
+  auto xml_status = parseWindowsEventLogXML(propTree, buffer);
+  if (!xml_status.succeeded() ) {
+    std::cout << "Error parsing event log XML";
+    return xml_status;
+  }
+
+  auto pt_status = parseWindowsEventLogPTree(windows_event, propTree);
+  if (!pt_status.succeeded()) {
+    std::cout << "Error parsing event log PTree";
+    return pt_status;
+  }
+  //
+
   {
     std::lock_guard<std::mutex> lock(d->event_list_mutex);
     d->event_list.push_back(std::move(buffer));
   }
-
-  //wprintf(L"Here event list [0] with wcout");
-  //std::wcout << d->event_list[0];
-  //wprintf(L"Here event [1] list with wcout");
-  //std::wcout << d->event_list[1];
 
   d->event_list_cv.notify_one();
   return Status::success();
