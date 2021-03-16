@@ -40,8 +40,7 @@ DWORD WINAPI EvtSubscriptionCallbackDispatcher(
 
     return 0;
   }
-
-  wprintf(L"process events \n");
+  
   subscription.processEvent(event);
   return 0U;
 }
@@ -185,11 +184,13 @@ Status WineventConsumer::processEvent(EVT_HANDLE event) {
     std::cout << "Error parsing event log PTree";
     return pt_status;
   }
+
+  //std::cout << "Here comes windows_event.data: " << windows_event.data;
   //
 
   {
     std::lock_guard<std::mutex> lock(d->event_list_mutex);
-    d->event_list.push_back(std::move(buffer));
+    d->event_list.push_back(std::move(windows_event));
   }
 
   d->event_list_cv.notify_one();

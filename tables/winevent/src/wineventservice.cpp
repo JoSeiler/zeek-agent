@@ -54,8 +54,6 @@ Status WineventService::exec(std::atomic_bool &terminate) {
     auto &socket_events_table_impl =
         *static_cast<SocketEventsTablePlugin *>(d->socket_events_table.get());
 
-    //auto status = d->winevent_consumer->p
-
     IWineventConsumer::EventList event_list;
     d->winevent_consumer->getEvents(event_list);
 

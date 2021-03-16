@@ -51,6 +51,6 @@ public:
   /// \brief Generates a single row from the given Windows Event Log event
   /// \param event a single EndpointSecurity event
   /// \return A Status object
-  static Status generateRow(Row &row, const IWineventConsumer::Event &event);
+  static Status generateRow(Row &row, const WELEvent &event);
 };
 } // namespace zeek

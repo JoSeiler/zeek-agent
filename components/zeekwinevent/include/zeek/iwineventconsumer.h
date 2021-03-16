@@ -40,9 +40,7 @@ class IWineventConsumer {
 public:
 
   /// \brief A list of WEL events
-  using Event = std::wstring;
-  using EventList = std::vector<Event>;
-  //using EventList = std::vector<WELEvent>;
+  using EventList = std::vector<WELEvent>;
 
   /// \brief A unique_ptr to an IWineventConsumer
   using Ref = std::unique_ptr<IWineventConsumer>;

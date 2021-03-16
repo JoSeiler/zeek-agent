@@ -3,6 +3,7 @@
 #include <chrono>
 #include <limits>
 #include <mutex>
+#include <iostream>
 
 namespace zeek {
 
@@ -108,10 +109,12 @@ SocketEventsTablePlugin::SocketEventsTablePlugin(
 }
 
 Status SocketEventsTablePlugin::generateRow(Row &row,
-                                     const IWineventConsumer::Event &event) {
+                                     const WELEvent &event) {
 
   row = {};
   auto x = event;
+
+  std::cout << "Here's event.data in socketeventstable: " << event.data << "\n";
 
   //Todo
   //row ["test"] = event.test;

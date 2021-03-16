@@ -52,14 +52,14 @@ function(zeekAgentComponentsWinEvent)
             SYSTEM INTERFACE include
             )
 
-    generateZeekAgentTest(
-            SOURCE_TARGET
-            "${PROJECT_NAME}"
+    #generateZeekAgentTest(
+    #        SOURCE_TARGET
+    #        "${PROJECT_NAME}"
 
-            SOURCES
-            tests/main.cpp
-            tests/wineventconsumer.cpp
-    )
+    #        SOURCES
+    #        tests/main.cpp
+    #        tests/wineventconsumer.cpp
+    #)
 endfunction()
 
 zeekAgentComponentsWinEvent()
