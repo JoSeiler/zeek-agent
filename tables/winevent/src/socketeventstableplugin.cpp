@@ -39,7 +39,7 @@ Status SocketEventsTablePlugin::create(Ref &obj,
 SocketEventsTablePlugin::~SocketEventsTablePlugin() {}
 
 const std::string &SocketEventsTablePlugin::name() const {
-  static const std::string kTableName{"socket_events"};
+  static const std::string kTableName{"winsocket_events"};
 
   return kTableName;
 }
@@ -61,8 +61,8 @@ const SocketEventsTablePlugin::Schema &SocketEventsTablePlugin::schema() const {
       {"pid", IVirtualTable::ColumnType::Integer},
       {"tid", IVirtualTable::ColumnType::Integer},
 
-      {"keywords", IVirtualTable::ColumnType::Integer},
-      {"data", IVirtualTable::ColumnType::Integer}
+      {"keywords", IVirtualTable::ColumnType::String},
+      {"data", IVirtualTable::ColumnType::String}
   };
 
   return kTableSchema;
@@ -101,7 +101,7 @@ Status SocketEventsTablePlugin::processEvents(
     auto rows_to_remove = d->row_list.size() - d->max_queued_row_count;
 
     d->logger.logMessage(IZeekLogger::Severity::Warning,
-                         "socket_events: Dropping " +
+                         "winsocket_events: Dropping " +
                          std::to_string(rows_to_remove) +
                          " rows (max row count is set to " +
                          std::to_string(d->max_queued_row_count) + ")");
@@ -135,16 +135,13 @@ Status SocketEventsTablePlugin::generateRow(Row &row,
     return Status::success();
   }
 
-  //std::cout << "Here's event.data in socketeventstable: " << event.data << "\n";
-
-  //Todo
   row["zeek_time"] = event.zeek_time;
   row["date_time"] = event.datetime;
 
   row["source"] = event.source;
   row["provider_name"] = event.provider_name;
   row["provider_guid"] = event.provider_guid;
-  row["computer"] = event.zeek_time;
+  row["computer_name"] = event.computer_name;
 
   row["event_id"] = event.event_id;
   row["task_id"] = event.task_id;
@@ -155,7 +152,7 @@ Status SocketEventsTablePlugin::generateRow(Row &row,
   row["keywords"] = event.keywords;
   row["data"] = event.data; // todo maybe split up data
 
-  std::cout << "successfull " << "\n";
+  std::cout << "Here's event.data in socketeventstable: " << event.data << "\n";
 
   return Status::success();
 }
