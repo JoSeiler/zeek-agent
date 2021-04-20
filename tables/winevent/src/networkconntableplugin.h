@@ -7,7 +7,7 @@
 
 namespace zeek {
 /// \brief A virtual table plugin that presents WEL socket events
-class SocketEventsTablePlugin final : public IVirtualTable {
+class NetworkConnTablePlugin final : public IVirtualTable {
   struct PrivateData;
   std::unique_ptr<PrivateData> d;
 
@@ -21,7 +21,7 @@ public:
                        IZeekLogger &logger);
 
   /// \brief Destructor
-  virtual ~SocketEventsTablePlugin() override;
+  virtual ~NetworkConnTablePlugin() override;
 
   /// \return The table name
   virtual const std::string &name() const override;
@@ -44,7 +44,7 @@ protected:
   /// \brief Constructor
   /// \param configuration An initialized configuration object
   /// \param logger An initialized logger object
-  SocketEventsTablePlugin(IZeekConfiguration &configuration,
+  NetworkConnTablePlugin(IZeekConfiguration &configuration,
                           IZeekLogger &logger);
 
 public:

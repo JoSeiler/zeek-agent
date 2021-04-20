@@ -1,13 +1,17 @@
-#include "socketeventstableplugin.h"
+#include "processcreationtableplugin.h"
 
 #include <chrono>
 #include <limits>
 #include <mutex>
 #include <iostream>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+
+namespace pt = boost::property_tree;
 
 namespace zeek {
 
-struct SocketEventsTablePlugin::PrivateData final {
+struct ProcessCreationTablePlugin::PrivateData final {
   PrivateData(IZeekConfiguration &configuration_, IZeekLogger &logger_)
       : configuration(configuration_), logger(logger_) {}
 
@@ -19,12 +23,12 @@ struct SocketEventsTablePlugin::PrivateData final {
   std::size_t max_queued_row_count{0U};
 };
 
-Status SocketEventsTablePlugin::create(Ref &obj,
+Status ProcessCreationTablePlugin::create(Ref &obj,
                                        IZeekConfiguration &configuration,
                                        IZeekLogger &logger) {
 
   try {
-    obj.reset(new SocketEventsTablePlugin(configuration, logger));
+    obj.reset(new ProcessCreationTablePlugin(configuration, logger));
 
     return Status::success();
 
@@ -36,19 +40,20 @@ Status SocketEventsTablePlugin::create(Ref &obj,
   }
 }
 
-SocketEventsTablePlugin::~SocketEventsTablePlugin() {}
+ProcessCreationTablePlugin::~ProcessCreationTablePlugin() {}
 
-const std::string &SocketEventsTablePlugin::name() const {
-  static const std::string kTableName{"winsocket_events"};
+const std::string &ProcessCreationTablePlugin::name() const {
+  static const std::string kTableName{"process_creation"};
 
   return kTableName;
 }
 
-const SocketEventsTablePlugin::Schema &SocketEventsTablePlugin::schema() const {
+const ProcessCreationTablePlugin::Schema &ProcessCreationTablePlugin::schema() const {
 
   static const Schema kTableSchema = {
+      // System data
       {"zeek_time", IVirtualTable::ColumnType::Integer},
-      {"date_time", IVirtualTable::ColumnType::Integer},
+      {"date_time", IVirtualTable::ColumnType::String},
 
       {"source", IVirtualTable::ColumnType::String},
       {"provider_name", IVirtualTable::ColumnType::String},
@@ -62,13 +67,28 @@ const SocketEventsTablePlugin::Schema &SocketEventsTablePlugin::schema() const {
       {"tid", IVirtualTable::ColumnType::Integer},
 
       {"keywords", IVirtualTable::ColumnType::String},
-      {"data", IVirtualTable::ColumnType::String}
+      {"data", IVirtualTable::ColumnType::String},
+
+      // Event data
+      {"subject_user_id", IVirtualTable::ColumnType::String},
+      {"subject_user_name", IVirtualTable::ColumnType::String},
+      {"subject_domain_name", IVirtualTable::ColumnType::String},
+      {"subject_logon_id", IVirtualTable::ColumnType::String},
+      {"new_process_id", IVirtualTable::ColumnType::String},
+      {"new_process_name", IVirtualTable::ColumnType::String},
+      {"token_elevation_type", IVirtualTable::ColumnType::Integer},
+      {"command_line", IVirtualTable::ColumnType::String},
+      {"target_user_sid", IVirtualTable::ColumnType::String},
+      {"target_user_name", IVirtualTable::ColumnType::String},
+      {"target_domain_name", IVirtualTable::ColumnType::String},
+      {"parent_process_name", IVirtualTable::ColumnType::String},
+      {"mandatory_label", IVirtualTable::ColumnType::String}
   };
 
   return kTableSchema;
 }
 
-Status SocketEventsTablePlugin::generateRowList(RowList &row_list) {
+Status ProcessCreationTablePlugin::generateRowList(RowList &row_list) {
   std::lock_guard<std::mutex> lock(d->row_list_mutex);
 
   row_list = std::move(d->row_list);
@@ -77,7 +97,7 @@ Status SocketEventsTablePlugin::generateRowList(RowList &row_list) {
   return Status::success();
 }
 
-Status SocketEventsTablePlugin::processEvents(
+Status ProcessCreationTablePlugin::processEvents(
     const IWineventConsumer::EventList &event_list) {
 
   for (const auto &event : event_list) {
@@ -116,24 +136,23 @@ Status SocketEventsTablePlugin::processEvents(
   return Status::success();
 }
 
-SocketEventsTablePlugin::SocketEventsTablePlugin(
+ProcessCreationTablePlugin::ProcessCreationTablePlugin(
     IZeekConfiguration &configuration, IZeekLogger &logger)
     : d(new PrivateData(configuration, logger)) {
   d->max_queued_row_count = d->configuration.maxQueuedRowCount();
 }
 
-Status SocketEventsTablePlugin::generateRow(Row &row,
-                                     const WELEvent &event) {
+Status ProcessCreationTablePlugin::generateRow(Row &row,
+                                            const WELEvent &event) {
 
   row = {};
-  auto x = event;
 
-  std::cout << "event_id: " << event.event_id << "\n";
-
-  if (event.event_id != 5156)
+  if (event.event_id != 4688)
   {
     return Status::success();
   }
+
+  std::cout << "Process creation: event_id: " << event.event_id << "\n";
 
   row["zeek_time"] = event.zeek_time;
   row["date_time"] = event.datetime;
@@ -150,9 +169,9 @@ Status SocketEventsTablePlugin::generateRow(Row &row,
   row["tid"] = event.tid;
 
   row["keywords"] = event.keywords;
-  row["data"] = event.data; // todo maybe split up data
+  row["data"] = event.data;
 
-  std::cout << "Here's event.data in socketeventstable: " << event.data << "\n";
+  std::cout << "Here's event.data in process_creation table: " << event.data << "\n";
 
   return Status::success();
 }

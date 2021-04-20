@@ -1,5 +1,6 @@
 #include "wineventservice.h"
-#include "socketeventstableplugin.h"
+#include "networkconntableplugin.h"
+#include "processcreationtableplugin.h"
 
 #include <algorithm>
 #include <cassert>
@@ -26,15 +27,23 @@ struct WineventService::PrivateData final {
 
   IWineventConsumer::Ref winevent_consumer;
 
-  IVirtualTable::Ref socket_events_table;
+  IVirtualTable::Ref network_conn_table;
+  IVirtualTable::Ref process_creation_table;
 };
 
 WineventService::~WineventService() {
-  if (d->socket_events_table) {
+  if (d->network_conn_table) {
     auto status =
-        d->virtual_database.unregisterTable(d->socket_events_table->name());
+        d->virtual_database.unregisterTable(d->network_conn_table->name());
     assert(status.succeeded() &&
            "Failed to unregister the socket_events table");
+  }
+
+  if (d->process_creation_table) {
+    auto status =
+        d->virtual_database.unregisterTable(d->process_creation_table->name());
+    assert(status.succeeded() &&
+           "Failed to unregister the process_creation table");
   }
 }
 
@@ -44,15 +53,18 @@ Status WineventService::exec(std::atomic_bool &terminate) {
 
   while (!terminate) {
 
-    if (!d->socket_events_table) {
+    if (!d->network_conn_table || !d->process_creation_table) {
       d->logger.logMessage(IZeekLogger::Severity::Information,
                            "Table(s) not created yet, sleeping for 1 second");
       std::this_thread::sleep_for(std::chrono::seconds(1U));
       continue;
     }
 
-    auto &socket_events_table_impl =
-        *static_cast<SocketEventsTablePlugin *>(d->socket_events_table.get());
+    auto &network_conn_table_impl =
+        *static_cast<NetworkConnTablePlugin *>(d->network_conn_table.get());
+
+    auto &process_creation_table_impl =
+        *static_cast<ProcessCreationTablePlugin *>(d->process_creation_table.get());
 
     IWineventConsumer::EventList event_list;
     d->winevent_consumer->getEvents(event_list);
@@ -61,11 +73,19 @@ Status WineventService::exec(std::atomic_bool &terminate) {
       continue;
     }
 
-    auto status = socket_events_table_impl.processEvents(event_list);
+    auto status = network_conn_table_impl.processEvents(event_list);
     if (!status.succeeded()) {
       d->logger.logMessage(
           IZeekLogger::Severity::Error,
           "The socket_events table failed to process some events: " +
+          status.message());
+    }
+
+    status = process_creation_table_impl.processEvents(event_list);
+    if (!status.succeeded()) {
+      d->logger.logMessage(
+          IZeekLogger::Severity::Error,
+          "The process_creation table failed to process some events: " +
           status.message());
     }
   }
@@ -92,13 +112,24 @@ WineventService::WineventService(IVirtualDatabase &virtual_database,
     return;
   }
 
-  status = SocketEventsTablePlugin::create(d->socket_events_table,
+  status = NetworkConnTablePlugin::create(d->network_conn_table,
                                            configuration, logger);
   if (!status.succeeded()) {
     throw status;
   }
 
-  status = d->virtual_database.registerTable(d->socket_events_table);
+  status = d->virtual_database.registerTable(d->network_conn_table);
+  if (!status.succeeded()) {
+    throw status;
+  }
+
+  status = ProcessCreationTablePlugin::create(d->process_creation_table,
+                                           configuration, logger);
+  if (!status.succeeded()) {
+    throw status;
+  }
+
+  status = d->virtual_database.registerTable(d->process_creation_table);
   if (!status.succeeded()) {
     throw status;
   }
