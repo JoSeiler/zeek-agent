@@ -1,5 +1,5 @@
-#include "wineventconsumer.h"
 #include "windows_utils.h"
+#include "winevtlogconsumer.h"
 #include "winevtlogparser.h"
 
 #include <cerrno>
@@ -20,7 +20,7 @@ namespace zeek {
 // Note: Windows ignores the exit code of this function
 DWORD WINAPI EvtSubscriptionCallbackDispatcher(
     EVT_SUBSCRIBE_NOTIFY_ACTION action, PVOID context, EVT_HANDLE event) {
-  auto& subscription = *static_cast<WineventConsumer*>(context);
+  auto& subscription = *static_cast<WinevtlogConsumer*>(context);
 
   if (action == EvtSubscribeActionError) {
     //Todo error handling
@@ -46,7 +46,7 @@ DWORD WINAPI EvtSubscriptionCallbackDispatcher(
 }
 
 
-struct WineventConsumer::PrivateData final {
+struct WinevtlogConsumer::PrivateData final {
   PrivateData(IZeekLogger &logger_, IZeekConfiguration &configuration_)
       : logger(logger_), configuration(configuration_) {}
 
@@ -61,7 +61,7 @@ struct WineventConsumer::PrivateData final {
   std::condition_variable event_list_cv;
 };
 
-WineventConsumer::WineventConsumer(IZeekLogger &logger, IZeekConfiguration &configuration, const std::string &channel)
+WinevtlogConsumer::WinevtlogConsumer(IZeekLogger &logger, IZeekConfiguration &configuration, const std::string &channel)
     : d(new PrivateData(logger, configuration)) {
 
   d->channel = channel;
@@ -89,15 +89,15 @@ WineventConsumer::WineventConsumer(IZeekLogger &logger, IZeekConfiguration &conf
   d->handle = subscription;
 }
 
-WineventConsumer::~WineventConsumer() {
+WinevtlogConsumer::~WinevtlogConsumer() {
   EvtClose(d->handle);
 }
 
-const std::string WineventConsumer::channel() const {
+const std::string WinevtlogConsumer::channel() const {
   return d->channel;
 }
 
-Status WineventConsumer::getEvents(EventList &event_list) {
+Status WinevtlogConsumer::getEvents(EventList &event_list) {
   event_list = {};
 
   {
@@ -113,14 +113,14 @@ Status WineventConsumer::getEvents(EventList &event_list) {
   return Status::success();
 }
 
-Status IWineventConsumer::create(Ref &obj,
+Status IWinevtlogConsumer::create(Ref &obj,
                                  IZeekLogger &logger,
                                  IZeekConfiguration &configuration,
                                  const std::string &channel) {
   obj.reset();
 
   try {
-    obj.reset(new WineventConsumer(logger, configuration, channel));
+    obj.reset(new WinevtlogConsumer(logger, configuration, channel));
     return Status::success();
 
   } catch (const std::bad_alloc &) {
@@ -131,7 +131,7 @@ Status IWineventConsumer::create(Ref &obj,
   }
 }
 
-Status WineventConsumer::processEvent(EVT_HANDLE event) {
+Status WinevtlogConsumer::processEvent(EVT_HANDLE event) {
   DWORD buffer_size{0U};
   DWORD property_count{0U};
 

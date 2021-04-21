@@ -1,6 +1,6 @@
 #pragma once
 
-#include <zeek/iwineventconsumer.h>
+#include <zeek/iwinevtlogconsumer.h>
 #include <zeek/ivirtualtable.h>
 #include <zeek/izeekconfiguration.h>
 #include <zeek/izeeklogger.h>
@@ -38,7 +38,7 @@ public:
   /// \brief Processes the specified event list, generating new rows
   /// \param event_list A list of Windows Event Log events
   /// \return A Status object
-  Status processEvents(const IWineventConsumer::EventList &event_list);
+  Status processEvents(const IWinevtlogConsumer::EventList &event_list);
 
 protected:
   /// \brief Constructor

@@ -22,7 +22,7 @@ function(zeekAgentComponentsWinEvent)
     endif (NOT Boost_FOUND)
 
     add_library("${PROJECT_NAME}"
-            include/zeek/iwineventconsumer.h
+            include/zeek/iwinevtlogconsumer.h
 
             src/windows_utils.h
             src/windows_utils.cpp
@@ -30,8 +30,8 @@ function(zeekAgentComponentsWinEvent)
             src/winevtlogparser.h
             src/winevtlogparser.cpp
 
-            src/wineventconsumer.h
-            src/wineventconsumer.cpp
+            src/winevtlogconsumer.h
+            src/winevtlogconsumer.cpp
             )
 
     target_link_libraries("${PROJECT_NAME}"

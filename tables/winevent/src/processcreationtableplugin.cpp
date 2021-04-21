@@ -98,7 +98,7 @@ Status ProcessCreationTablePlugin::generateRowList(RowList &row_list) {
 }
 
 Status ProcessCreationTablePlugin::processEvents(
-    const IWineventConsumer::EventList &event_list) {
+    const IWinevtlogConsumer::EventList &event_list) {
 
   for (const auto &event : event_list) {
     Row row;

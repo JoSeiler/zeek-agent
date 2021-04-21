@@ -11,10 +11,10 @@ namespace zeek {
 
 DWORD WINAPI EvtSubscriptionCallbackDispatcher(EVT_SUBSCRIBE_NOTIFY_ACTION action, PVOID context, EVT_HANDLE event);
 
-class WineventConsumer final : public IWineventConsumer {
+class WinevtlogConsumer final : public IWinevtlogConsumer {
 public:
   /// \brief Destructor
-  ~WineventConsumer() override;
+  ~WinevtlogConsumer() override;
 
   //Todo brief
   const std::string channel() const;
@@ -29,10 +29,9 @@ private:
   std::unique_ptr<PrivateData> d;
 
   /// \brief Constructor
-  WineventConsumer(IZeekLogger &logger, IZeekConfiguration &configuration, const std::string &channel);
+  WinevtlogConsumer(IZeekLogger &logger, IZeekConfiguration &configuration, const std::string &channel);
 
-  /// \brief Process Windows event log and generate object
-  //static Status parseWindowsEventLogXML(WELEvent &event);
+  /// \brief Process WEL and generate object
   virtual Status processEvent(EVT_HANDLE event) override;
 
   friend DWORD WINAPI EvtSubscriptionCallbackDispatcher(EVT_SUBSCRIBE_NOTIFY_ACTION action, PVOID context, EVT_HANDLE event);

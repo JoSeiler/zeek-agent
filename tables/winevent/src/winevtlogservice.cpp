@@ -8,7 +8,7 @@
 #include <chrono>
 #include <thread>
 
-#include <zeek/iwineventconsumer.h>
+#include <zeek/iwinevtlogconsumer.h>
 #include <zeek/winevtlogservicefactory.h>
 
 namespace zeek {
@@ -26,7 +26,7 @@ struct WinevtlogService::PrivateData final {
   IZeekConfiguration &configuration;
   IZeekLogger &logger;
 
-  IWineventConsumer::Ref winevent_consumer;
+  IWinevtlogConsumer::Ref winevtlog_consumer;
 
   IVirtualTable::Ref network_conn_table;
   IVirtualTable::Ref process_creation_table;
@@ -78,8 +78,8 @@ Status WinevtlogService::exec(std::atomic_bool &terminate) {
     auto &process_termination_table_impl =
         *static_cast<ProcessTerminationTablePlugin *>(d->process_termination_table.get());
 
-    IWineventConsumer::EventList event_list;
-    d->winevent_consumer->getEvents(event_list);
+    IWinevtlogConsumer::EventList event_list;
+    d->winevtlog_consumer->getEvents(event_list);
 
     if (event_list.empty()) {
       continue;
@@ -121,7 +121,7 @@ WinevtlogService::WinevtlogService(IVirtualDatabase &virtual_database,
   std::string channel = "makethisselectable"; //todo
 
   auto status =
-      IWineventConsumer::create(d->winevent_consumer, logger, configuration, channel);
+      IWinevtlogConsumer::create(d->winevtlog_consumer, logger, configuration, channel);
 
   if (!status.succeeded()) {
     d->logger.logMessage(IZeekLogger::Severity::Error,
