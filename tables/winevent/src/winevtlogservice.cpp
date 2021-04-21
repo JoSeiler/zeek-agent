@@ -2,6 +2,8 @@
 #include "networkconntableplugin.h"
 #include "processcreationtableplugin.h"
 #include "processterminationtableplugin.h"
+#include "filecreatetableplugin.h"
+#include "regvalmodifiedtableplugin.h"
 
 #include <algorithm>
 #include <cassert>
@@ -31,6 +33,8 @@ struct WinevtlogService::PrivateData final {
   IVirtualTable::Ref network_conn_table;
   IVirtualTable::Ref process_creation_table;
   IVirtualTable::Ref process_termination_table;
+  IVirtualTable::Ref file_create_table;
+  IVirtualTable::Ref regval_modified_table;
 };
 
 WinevtlogService::~WinevtlogService() {
@@ -53,6 +57,20 @@ WinevtlogService::~WinevtlogService() {
         d->virtual_database.unregisterTable(d->process_termination_table->name());
     assert(status.succeeded() &&
            "Failed to unregister the process_termination table");
+  }
+
+  if (d->file_create_table) {
+    auto status =
+        d->virtual_database.unregisterTable(d->file_create_table->name());
+    assert(status.succeeded() &&
+           "Failed to unregister the file_create table");
+  }
+
+  if (d->regval_modified_table) {
+    auto status =
+        d->virtual_database.unregisterTable(d->regval_modified_table->name());
+    assert(status.succeeded() &&
+           "Failed to unregister the regval_modified table");
   }
 }
 
@@ -78,6 +96,12 @@ Status WinevtlogService::exec(std::atomic_bool &terminate) {
     auto &process_termination_table_impl =
         *static_cast<ProcessTerminationTablePlugin *>(d->process_termination_table.get());
 
+    auto &file_create_table_impl =
+        *static_cast<FileCreateTablePlugin *>(d->file_create_table.get());
+
+    auto &regval_modified_table_impl =
+        *static_cast<RegValModifiedTablePlugin *>(d->regval_modified_table.get());
+
     IWinevtlogConsumer::EventList event_list;
     d->winevtlog_consumer->getEvents(event_list);
 
@@ -89,7 +113,7 @@ Status WinevtlogService::exec(std::atomic_bool &terminate) {
     if (!status.succeeded()) {
       d->logger.logMessage(
           IZeekLogger::Severity::Error,
-          "The socket_events table failed to process some events: " +
+          "The network_conn table failed to process some events: " +
           status.message());
     }
 
@@ -106,6 +130,22 @@ Status WinevtlogService::exec(std::atomic_bool &terminate) {
       d->logger.logMessage(
           IZeekLogger::Severity::Error,
           "The process_termination table failed to process some events: " +
+          status.message());
+    }
+
+    status = file_create_table_impl.processEvents(event_list);
+    if (!status.succeeded()) {
+      d->logger.logMessage(
+          IZeekLogger::Severity::Error,
+          "The file_create table failed to process some events: " +
+          status.message());
+    }
+
+    status = regval_modified_table_impl.processEvents(event_list);
+    if (!status.succeeded()) {
+      d->logger.logMessage(
+          IZeekLogger::Severity::Error,
+          "The regval_modified table failed to process some events: " +
           status.message());
     }
   }
@@ -161,6 +201,28 @@ WinevtlogService::WinevtlogService(IVirtualDatabase &virtual_database,
   }
 
   status = d->virtual_database.registerTable(d->process_termination_table);
+  if (!status.succeeded()) {
+    throw status;
+  }
+
+  status = FileCreateTablePlugin::create(d->file_create_table,
+                                                 configuration, logger);
+  if (!status.succeeded()) {
+    throw status;
+  }
+
+  status = d->virtual_database.registerTable(d->file_create_table);
+  if (!status.succeeded()) {
+    throw status;
+  }
+
+  status = RegValModifiedTablePlugin::create(d->regval_modified_table,
+                                                 configuration, logger);
+  if (!status.succeeded()) {
+    throw status;
+  }
+
+  status = d->virtual_database.registerTable(d->regval_modified_table);
   if (!status.succeeded()) {
     throw status;
   }

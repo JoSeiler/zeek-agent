@@ -1,4 +1,4 @@
-#include "processcreationtableplugin.h"
+#include "filecreatetableplugin.h"
 
 #include <chrono>
 #include <limits>
@@ -11,7 +11,7 @@ namespace pt = boost::property_tree;
 
 namespace zeek {
 
-struct ProcessCreationTablePlugin::PrivateData final {
+struct FileCreateTablePlugin::PrivateData final {
   PrivateData(IZeekConfiguration &configuration_, IZeekLogger &logger_)
       : configuration(configuration_), logger(logger_) {}
 
@@ -23,12 +23,12 @@ struct ProcessCreationTablePlugin::PrivateData final {
   std::size_t max_queued_row_count{0U};
 };
 
-Status ProcessCreationTablePlugin::create(Ref &obj,
+Status FileCreateTablePlugin::create(Ref &obj,
                                        IZeekConfiguration &configuration,
                                        IZeekLogger &logger) {
 
   try {
-    obj.reset(new ProcessCreationTablePlugin(configuration, logger));
+    obj.reset(new FileCreateTablePlugin(configuration, logger));
 
     return Status::success();
 
@@ -40,15 +40,15 @@ Status ProcessCreationTablePlugin::create(Ref &obj,
   }
 }
 
-ProcessCreationTablePlugin::~ProcessCreationTablePlugin() {}
+FileCreateTablePlugin::~FileCreateTablePlugin() {}
 
-const std::string &ProcessCreationTablePlugin::name() const {
-  static const std::string kTableName{"process_creation"};
+const std::string &FileCreateTablePlugin::name() const {
+  static const std::string kTableName{"file_create"};
 
   return kTableName;
 }
 
-const ProcessCreationTablePlugin::Schema &ProcessCreationTablePlugin::schema() const {
+const FileCreateTablePlugin::Schema &FileCreateTablePlugin::schema() const {
 
   static const Schema kTableSchema = {
       // System data
@@ -74,21 +74,21 @@ const ProcessCreationTablePlugin::Schema &ProcessCreationTablePlugin::schema() c
       {"subject_user_name", IVirtualTable::ColumnType::String},
       {"subject_domain_name", IVirtualTable::ColumnType::String},
       {"subject_logon_id", IVirtualTable::ColumnType::String},
-      {"new_process_id", IVirtualTable::ColumnType::String},
-      {"new_process_name", IVirtualTable::ColumnType::String},
-      {"token_elevation_type", IVirtualTable::ColumnType::String},
-      {"command_line", IVirtualTable::ColumnType::String},
-      {"target_user_sid", IVirtualTable::ColumnType::String},
-      {"target_user_name", IVirtualTable::ColumnType::String},
-      {"target_domain_name", IVirtualTable::ColumnType::String},
-      {"parent_process_name", IVirtualTable::ColumnType::String},
-      {"mandatory_label", IVirtualTable::ColumnType::String}
+      {"object_server", IVirtualTable::ColumnType::String},
+      {"object_type", IVirtualTable::ColumnType::String},
+      {"object_name", IVirtualTable::ColumnType::String},
+      {"handle_id", IVirtualTable::ColumnType::String},
+      {"access_list", IVirtualTable::ColumnType::String},
+      {"access_mask", IVirtualTable::ColumnType::String},
+      {"process_id", IVirtualTable::ColumnType::String},
+      {"process_name", IVirtualTable::ColumnType::String},
+      {"resource_attributes", IVirtualTable::ColumnType::String}
   };
 
   return kTableSchema;
 }
 
-Status ProcessCreationTablePlugin::generateRowList(RowList &row_list) {
+Status FileCreateTablePlugin::generateRowList(RowList &row_list) {
   std::lock_guard<std::mutex> lock(d->row_list_mutex);
 
   row_list = std::move(d->row_list);
@@ -97,7 +97,7 @@ Status ProcessCreationTablePlugin::generateRowList(RowList &row_list) {
   return Status::success();
 }
 
-Status ProcessCreationTablePlugin::processEvents(
+Status FileCreateTablePlugin::processEvents(
     const IWinevtlogConsumer::EventList &event_list) {
 
   for (const auto &event : event_list) {
@@ -121,7 +121,7 @@ Status ProcessCreationTablePlugin::processEvents(
     auto rows_to_remove = d->row_list.size() - d->max_queued_row_count;
 
     d->logger.logMessage(IZeekLogger::Severity::Warning,
-                         "process_creation_events: Dropping " +
+                         "file_create_events: Dropping " +
                          std::to_string(rows_to_remove) +
                          " rows (max row count is set to " +
                          std::to_string(d->max_queued_row_count) + ")");
@@ -136,13 +136,13 @@ Status ProcessCreationTablePlugin::processEvents(
   return Status::success();
 }
 
-ProcessCreationTablePlugin::ProcessCreationTablePlugin(
+FileCreateTablePlugin::FileCreateTablePlugin(
     IZeekConfiguration &configuration, IZeekLogger &logger)
     : d(new PrivateData(configuration, logger)) {
   d->max_queued_row_count = d->configuration.maxQueuedRowCount();
 }
 
-Status ProcessCreationTablePlugin::generateRow(Row &row,
+Status FileCreateTablePlugin::generateRow(Row &row,
                                             const WELEvent &event) {
 
   row = {};
@@ -152,7 +152,7 @@ Status ProcessCreationTablePlugin::generateRow(Row &row,
     return Status::success();
   }
 
-  std::cout << "Process creation: event_id: " << event.event_id << "\n";
+  std::cout << "File create: event_id: " << event.event_id << "\n";
 
   row["zeek_time"] = event.zeek_time;
   row["date_time"] = event.datetime;
@@ -171,7 +171,7 @@ Status ProcessCreationTablePlugin::generateRow(Row &row,
   row["keywords"] = event.keywords;
   row["data"] = event.data;
 
-  std::cout << "Here's event.data in process_creation table: " << event.data << "\n";
+  std::cout << "Here's event.data in file_create table: " << event.data << "\n";
 
   return Status::success();
 }

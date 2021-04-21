@@ -76,7 +76,7 @@ const ProcessTerminationTablePlugin::Schema &ProcessTerminationTablePlugin::sche
       {"subject_logon_id", IVirtualTable::ColumnType::String},
       {"status", IVirtualTable::ColumnType::String},
       {"process_id", IVirtualTable::ColumnType::String},
-      {"process_name", IVirtualTable::ColumnType::Integer},
+      {"process_name", IVirtualTable::ColumnType::String},
   };
 
   return kTableSchema;

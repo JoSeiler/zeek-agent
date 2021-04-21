@@ -149,7 +149,7 @@ Status WinevtlogConsumer::processEvent(EVT_HANDLE event) {
       //              "event for channel "
       //           << d->channel;
       wprintf(L"Failed to allocated the necessary memory to handle an event \n");
-      return Status::failure("Failed to allocated the necessary memory to handle an event");
+      return Status::failure("Failed to allocate the necessary memory to handle an event");
     }
   }
 
