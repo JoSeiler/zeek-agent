@@ -121,7 +121,7 @@ Status NetworkConnTablePlugin::processEvents(
     auto rows_to_remove = d->row_list.size() - d->max_queued_row_count;
 
     d->logger.logMessage(IZeekLogger::Severity::Warning,
-                         "winsocket_events: Dropping " +
+                         "network_conn_events: Dropping " +
                          std::to_string(rows_to_remove) +
                          " rows (max row count is set to " +
                          std::to_string(d->max_queued_row_count) + ")");
@@ -181,6 +181,9 @@ Status NetworkConnTablePlugin::generateRow(Row &row,
     std::cout << "Error: event data is illformed" << e.what() << "\n";
     return Status::success();
   }
+
+  //Todo
+  std::cout << "eventdata protocol: " << strTree.get("EventData.Protocol", -1) << "\n";
 
   try {
     for (pt::ptree::value_type &field : strTree.get_child("EventData"))

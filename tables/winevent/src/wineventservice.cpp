@@ -1,6 +1,7 @@
 #include "wineventservice.h"
 #include "networkconntableplugin.h"
 #include "processcreationtableplugin.h"
+#include "processterminationtableplugin.h"
 
 #include <algorithm>
 #include <cassert>
@@ -29,6 +30,7 @@ struct WineventService::PrivateData final {
 
   IVirtualTable::Ref network_conn_table;
   IVirtualTable::Ref process_creation_table;
+  IVirtualTable::Ref process_termination_table;
 };
 
 WineventService::~WineventService() {
@@ -36,7 +38,7 @@ WineventService::~WineventService() {
     auto status =
         d->virtual_database.unregisterTable(d->network_conn_table->name());
     assert(status.succeeded() &&
-           "Failed to unregister the socket_events table");
+           "Failed to unregister the network_conn table");
   }
 
   if (d->process_creation_table) {
@@ -44,6 +46,13 @@ WineventService::~WineventService() {
         d->virtual_database.unregisterTable(d->process_creation_table->name());
     assert(status.succeeded() &&
            "Failed to unregister the process_creation table");
+  }
+
+  if (d->process_termination_table) {
+    auto status =
+        d->virtual_database.unregisterTable(d->process_termination_table->name());
+    assert(status.succeeded() &&
+           "Failed to unregister the process_termination table");
   }
 }
 
@@ -53,7 +62,7 @@ Status WineventService::exec(std::atomic_bool &terminate) {
 
   while (!terminate) {
 
-    if (!d->network_conn_table || !d->process_creation_table) {
+    if (!d->network_conn_table || !d->process_creation_table || !d->process_termination_table) {
       d->logger.logMessage(IZeekLogger::Severity::Information,
                            "Table(s) not created yet, sleeping for 1 second");
       std::this_thread::sleep_for(std::chrono::seconds(1U));
@@ -65,6 +74,9 @@ Status WineventService::exec(std::atomic_bool &terminate) {
 
     auto &process_creation_table_impl =
         *static_cast<ProcessCreationTablePlugin *>(d->process_creation_table.get());
+
+    auto &process_termination_table_impl =
+        *static_cast<ProcessTerminationTablePlugin *>(d->process_termination_table.get());
 
     IWineventConsumer::EventList event_list;
     d->winevent_consumer->getEvents(event_list);
@@ -88,6 +100,14 @@ Status WineventService::exec(std::atomic_bool &terminate) {
           "The process_creation table failed to process some events: " +
           status.message());
     }
+
+    status = process_termination_table_impl.processEvents(event_list);
+    if (!status.succeeded()) {
+      d->logger.logMessage(
+          IZeekLogger::Severity::Error,
+          "The process_termination table failed to process some events: " +
+          status.message());
+    }
   }
 
   return Status::success();
@@ -106,7 +126,7 @@ WineventService::WineventService(IVirtualDatabase &virtual_database,
   if (!status.succeeded()) {
     d->logger.logMessage(IZeekLogger::Severity::Error,
                          "Failed to connect to the WEL API. The "
-                         "socket_events tables will not be enabled. Error: " +
+                         "WEL tables will not be enabled. Error: " +
                          status.message());
 
     return;
@@ -130,6 +150,17 @@ WineventService::WineventService(IVirtualDatabase &virtual_database,
   }
 
   status = d->virtual_database.registerTable(d->process_creation_table);
+  if (!status.succeeded()) {
+    throw status;
+  }
+
+  status = ProcessTerminationTablePlugin::create(d->process_termination_table,
+                                              configuration, logger);
+  if (!status.succeeded()) {
+    throw status;
+  }
+
+  status = d->virtual_database.registerTable(d->process_termination_table);
   if (!status.succeeded()) {
     throw status;
   }

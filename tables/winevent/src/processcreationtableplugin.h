@@ -6,7 +6,7 @@
 #include <zeek/izeeklogger.h>
 
 namespace zeek {
-/// \brief A virtual table plugin that presents WEL process creation events
+/// \brief A virtual table plugin that presents WEL process creation events (ID 4688)
 class ProcessCreationTablePlugin final : public IVirtualTable {
   struct PrivateData;
   std::unique_ptr<PrivateData> d;
@@ -49,7 +49,7 @@ protected:
 
 public:
   /// \brief Generates a single row from the given Windows Event Log event
-  /// \param event a single EndpointSecurity event
+  /// \param event a single WEL event
   /// \return A Status object
   static Status generateRow(Row &row, const WELEvent &event);
 };

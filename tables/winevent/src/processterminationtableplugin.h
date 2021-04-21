@@ -6,8 +6,8 @@
 #include <zeek/izeeklogger.h>
 
 namespace zeek {
-/// \brief A virtual table plugin that presents WEL network connection events (ID 5156)
-class NetworkConnTablePlugin final : public IVirtualTable {
+/// \brief A virtual table plugin that presents WEL process termination events (ID 4689)
+class ProcessTerminationTablePlugin final : public IVirtualTable {
   struct PrivateData;
   std::unique_ptr<PrivateData> d;
 
@@ -21,7 +21,7 @@ public:
                        IZeekLogger &logger);
 
   /// \brief Destructor
-  virtual ~NetworkConnTablePlugin() override;
+  virtual ~ProcessTerminationTablePlugin() override;
 
   /// \return The table name
   virtual const std::string &name() const override;
@@ -44,7 +44,7 @@ protected:
   /// \brief Constructor
   /// \param configuration An initialized configuration object
   /// \param logger An initialized logger object
-  NetworkConnTablePlugin(IZeekConfiguration &configuration,
+  ProcessTerminationTablePlugin(IZeekConfiguration &configuration,
                           IZeekLogger &logger);
 
 public:
