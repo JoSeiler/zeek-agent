@@ -4,7 +4,7 @@
 #include <optional>
 #include <vector>
 
-#include <zeek/iwineventconsumer.h>
+#include <zeek/iwinevtlogconsumer.h>
 #include <zeek/status.h>
 
 namespace zeek {
@@ -38,7 +38,7 @@ private:
   friend DWORD WINAPI EvtSubscriptionCallbackDispatcher(EVT_SUBSCRIBE_NOTIFY_ACTION action, PVOID context, EVT_HANDLE event);
 
 public:
-  friend class IWineventConsumer;
+  friend class IWinevtlogConsumer;
 
 };
 } // namespace zeek

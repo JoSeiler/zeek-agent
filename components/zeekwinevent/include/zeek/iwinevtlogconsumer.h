@@ -36,14 +36,14 @@ struct WELEvent final {
 };
 
 /// \brief Winevent consumer (interface)
-class IWineventConsumer {
+class IWinevtlogConsumer {
 public:
 
   /// \brief A list of WEL events
   using EventList = std::vector<WELEvent>;
 
   /// \brief A unique_ptr to an IWineventConsumer
-  using Ref = std::unique_ptr<IWineventConsumer>;
+  using Ref = std::unique_ptr<IWinevtlogConsumer>;
 
   /// \brief Factory method
   /// \param obj where the created object is stored
@@ -54,10 +54,10 @@ public:
                        IZeekConfiguration &configuration, const std::string &channel);
 
   /// \brief Constructor
-  IWineventConsumer() = default;
+  IWinevtlogConsumer() = default;
 
   /// \brief Destructor
-  virtual ~IWineventConsumer() = default;
+  virtual ~IWinevtlogConsumer() = default;
 
   /// \brief todo
   /// \return A Status object
@@ -68,9 +68,9 @@ public:
   /// \return A Status object
   virtual Status getEvents(EventList &event_list) = 0;
 
-  IWineventConsumer(const IWineventConsumer &other) = delete;
+  IWinevtlogConsumer(const IWinevtlogConsumer &other) = delete;
 
-  IWineventConsumer &operator=(const IWineventConsumer &other) = delete;
+  IWinevtlogConsumer &operator=(const IWinevtlogConsumer &other) = delete;
 };
 } // namespace zeek
 

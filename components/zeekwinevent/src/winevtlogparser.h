@@ -5,7 +5,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-#include <zeek/iwineventconsumer.h>
+#include <zeek/iwinevtlogconsumer.h>
 #include <zeek/status.h>
 
 namespace zeek {
