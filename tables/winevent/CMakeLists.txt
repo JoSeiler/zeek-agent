@@ -21,8 +21,8 @@ function(zeekAgentTablesWinEvent)
     endif (NOT Boost_FOUND)
 
     add_library(zeek_winevent_tables
-            include/zeek/wineventservicefactory.h
-            src/wineventservicefactory.cpp
+            include/zeek/winevtlogservicefactory.h
+            src/winevtlogservicefactory.cpp
 
             src/networkconntableplugin.h
             src/networkconntableplugin.cpp
@@ -33,8 +33,8 @@ function(zeekAgentTablesWinEvent)
             src/processterminationtableplugin.h
             src/processterminationtableplugin.cpp
 
-            src/wineventservice.h
-            src/wineventservice.cpp
+            src/winevtlogservice.h
+            src/winevtlogservice.cpp
             )
 
     target_include_directories(zeek_winevent_tables PRIVATE

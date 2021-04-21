@@ -16,7 +16,7 @@
 #include <zeek/endpointsecurityservicefactory.h>
 #include <zeek/openbsmservicefactory.h>
 #elif defined(ZEEK_AGENT_PLATFORM_WINDOWS)
-#include <zeek/wineventservicefactory.h>
+#include <zeek/winevtlogservicefactory.h>
 #endif
 
 #include <zeek/ihostinformationtableplugin.h>
@@ -268,7 +268,7 @@ ZeekAgent::initializeServiceManager(IZeekServiceManager::Ref &service_manager) {
   }
 
 #elif defined(ZEEK_AGENT_PLATFORM_WINDOWS)
-  status = registerWineventServiceFactory(
+  status = registerWinevtlogServiceFactory(
       *service_manager.get(), virtual_database, getConfig(), getLogger());
 
   if (!status.succeeded()) {

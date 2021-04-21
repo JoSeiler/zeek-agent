@@ -1,4 +1,4 @@
-#include "wineventservice.h"
+#include "winevtlogservice.h"
 #include "networkconntableplugin.h"
 #include "processcreationtableplugin.h"
 #include "processterminationtableplugin.h"
@@ -9,14 +9,14 @@
 #include <thread>
 
 #include <zeek/iwineventconsumer.h>
-#include <zeek/wineventservicefactory.h>
+#include <zeek/winevtlogservicefactory.h>
 
 namespace zeek {
 namespace {
-const std::string kServiceName{"winevent"};
+const std::string kServiceName{"winevtlog"};
 } // namespace
 
-struct WineventService::PrivateData final {
+struct WinevtlogService::PrivateData final {
   PrivateData(IVirtualDatabase &virtual_database_,
               IZeekConfiguration &configuration_, IZeekLogger &logger_)
       : virtual_database(virtual_database_), configuration(configuration_),
@@ -33,7 +33,7 @@ struct WineventService::PrivateData final {
   IVirtualTable::Ref process_termination_table;
 };
 
-WineventService::~WineventService() {
+WinevtlogService::~WinevtlogService() {
   if (d->network_conn_table) {
     auto status =
         d->virtual_database.unregisterTable(d->network_conn_table->name());
@@ -56,9 +56,9 @@ WineventService::~WineventService() {
   }
 }
 
-const std::string &WineventService::name() const { return kServiceName; }
+const std::string &WinevtlogService::name() const { return kServiceName; }
 
-Status WineventService::exec(std::atomic_bool &terminate) {
+Status WinevtlogService::exec(std::atomic_bool &terminate) {
 
   while (!terminate) {
 
@@ -113,7 +113,7 @@ Status WineventService::exec(std::atomic_bool &terminate) {
   return Status::success();
 }
 
-WineventService::WineventService(IVirtualDatabase &virtual_database,
+WinevtlogService::WinevtlogService(IVirtualDatabase &virtual_database,
                                IZeekConfiguration &configuration,
                                IZeekLogger &logger)
     : d(new PrivateData(virtual_database, configuration, logger)) {
@@ -166,7 +166,7 @@ WineventService::WineventService(IVirtualDatabase &virtual_database,
   }
 }
 
-struct WineventServiceFactory::PrivateData final {
+struct WinevtlogServiceFactory::PrivateData final {
   PrivateData(IVirtualDatabase &virtual_database_,
               IZeekConfiguration &configuration_, IZeekLogger &logger_)
       : virtual_database(virtual_database_), configuration(configuration_),
@@ -177,7 +177,7 @@ struct WineventServiceFactory::PrivateData final {
   IZeekLogger &logger;
 };
 
-Status WineventServiceFactory::create(Ref &obj,
+Status WinevtlogServiceFactory::create(Ref &obj,
                                      IVirtualDatabase &virtual_database,
                                      IZeekConfiguration &configuration,
                                      IZeekLogger &logger) {
@@ -185,7 +185,7 @@ Status WineventServiceFactory::create(Ref &obj,
 
   try {
     auto ptr =
-        new WineventServiceFactory(virtual_database, configuration, logger);
+        new WinevtlogServiceFactory(virtual_database, configuration, logger);
     obj.reset(ptr);
 
     return Status::success();
@@ -198,16 +198,16 @@ Status WineventServiceFactory::create(Ref &obj,
   }
 }
 
-WineventServiceFactory::~WineventServiceFactory() {}
+WinevtlogServiceFactory::~WinevtlogServiceFactory() {}
 
-const std::string &WineventServiceFactory::name() const { return kServiceName; }
+const std::string &WinevtlogServiceFactory::name() const { return kServiceName; }
 
-Status WineventServiceFactory::spawn(IZeekService::Ref &obj) {
+Status WinevtlogServiceFactory::spawn(IZeekService::Ref &obj) {
   obj.reset();
 
   try {
     obj.reset(
-        new WineventService(d->virtual_database, d->configuration, d->logger));
+        new WinevtlogService(d->virtual_database, d->configuration, d->logger));
 
     return Status::success();
 
@@ -219,7 +219,7 @@ Status WineventServiceFactory::spawn(IZeekService::Ref &obj) {
   }
 }
 
-WineventServiceFactory::WineventServiceFactory(IVirtualDatabase &virtual_database,
+WinevtlogServiceFactory::WinevtlogServiceFactory(IVirtualDatabase &virtual_database,
                                              IZeekConfiguration &configuration,
                                              IZeekLogger &logger)
     : d(new PrivateData(virtual_database, configuration, logger)) {}

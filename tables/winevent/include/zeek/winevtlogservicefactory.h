@@ -13,7 +13,7 @@ namespace zeek {
 ///                         are registered
 /// \param configuration An initialized configuration object
 /// \param logger An initialized logger object
-Status registerWineventServiceFactory(IZeekServiceManager &service_manager,
+Status registerWinevtlogServiceFactory(IZeekServiceManager &service_manager,
                                     IVirtualDatabase &virtual_database,
                                     IZeekConfiguration &configuration,
                                     IZeekLogger &logger);
