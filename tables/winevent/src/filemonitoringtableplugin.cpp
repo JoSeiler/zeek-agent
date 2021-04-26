@@ -1,4 +1,4 @@
-#include "filecreatetableplugin.h"
+#include "filemonitoringtableplugin.h"
 
 #include <chrono>
 #include <limits>
@@ -11,7 +11,7 @@ namespace pt = boost::property_tree;
 
 namespace zeek {
 
-struct FileCreateTablePlugin::PrivateData final {
+struct FileMonitoringTablePlugin::PrivateData final {
   PrivateData(IZeekConfiguration &configuration_, IZeekLogger &logger_)
       : configuration(configuration_), logger(logger_) {}
 
@@ -23,12 +23,12 @@ struct FileCreateTablePlugin::PrivateData final {
   std::size_t max_queued_row_count{0U};
 };
 
-Status FileCreateTablePlugin::create(Ref &obj,
+Status FileMonitoringTablePlugin::create(Ref &obj,
                                        IZeekConfiguration &configuration,
                                        IZeekLogger &logger) {
 
   try {
-    obj.reset(new FileCreateTablePlugin(configuration, logger));
+    obj.reset(new FileMonitoringTablePlugin(configuration, logger));
 
     return Status::success();
 
@@ -40,18 +40,18 @@ Status FileCreateTablePlugin::create(Ref &obj,
   }
 }
 
-FileCreateTablePlugin::~FileCreateTablePlugin() {}
+FileMonitoringTablePlugin::~FileMonitoringTablePlugin() {}
 
-const std::string &FileCreateTablePlugin::name() const {
-  static const std::string kTableName{"file_create"};
+const std::string &FileMonitoringTablePlugin::name() const {
+  static const std::string kTableName{"file_monitoring"};
 
   return kTableName;
 }
 
-const FileCreateTablePlugin::Schema &FileCreateTablePlugin::schema() const {
+const FileMonitoringTablePlugin::Schema &FileMonitoringTablePlugin::schema() const {
 
   static const Schema kTableSchema = {
-      // System data
+      // System fields
       {"zeek_time", IVirtualTable::ColumnType::Integer},
       {"date_time", IVirtualTable::ColumnType::String},
 
@@ -69,7 +69,7 @@ const FileCreateTablePlugin::Schema &FileCreateTablePlugin::schema() const {
       {"keywords", IVirtualTable::ColumnType::String},
       {"data", IVirtualTable::ColumnType::String},
 
-      // Event data
+      // Event data fields
       {"subject_user_id", IVirtualTable::ColumnType::String},
       {"subject_user_name", IVirtualTable::ColumnType::String},
       {"subject_domain_name", IVirtualTable::ColumnType::String},
@@ -88,7 +88,7 @@ const FileCreateTablePlugin::Schema &FileCreateTablePlugin::schema() const {
   return kTableSchema;
 }
 
-Status FileCreateTablePlugin::generateRowList(RowList &row_list) {
+Status FileMonitoringTablePlugin::generateRowList(RowList &row_list) {
   std::lock_guard<std::mutex> lock(d->row_list_mutex);
 
   row_list = std::move(d->row_list);
@@ -97,7 +97,7 @@ Status FileCreateTablePlugin::generateRowList(RowList &row_list) {
   return Status::success();
 }
 
-Status FileCreateTablePlugin::processEvents(
+Status FileMonitoringTablePlugin::processEvents(
     const IWinevtlogConsumer::EventList &event_list) {
 
   for (const auto &event : event_list) {
@@ -136,23 +136,21 @@ Status FileCreateTablePlugin::processEvents(
   return Status::success();
 }
 
-FileCreateTablePlugin::FileCreateTablePlugin(
+FileMonitoringTablePlugin::FileMonitoringTablePlugin(
     IZeekConfiguration &configuration, IZeekLogger &logger)
     : d(new PrivateData(configuration, logger)) {
   d->max_queued_row_count = d->configuration.maxQueuedRowCount();
 }
 
-Status FileCreateTablePlugin::generateRow(Row &row,
+Status FileMonitoringTablePlugin::generateRow(Row &row,
                                             const WELEvent &event) {
-
   row = {};
 
-  if (event.event_id != 4688)
-  {
+  if (event.event_id != 4688) {
     return Status::success();
   }
 
-  std::cout << "File create: event_id: " << event.event_id << "\n";
+  std::cout << "File create event: id: " << event.event_id << "\n";
 
   row["zeek_time"] = event.zeek_time;
   row["date_time"] = event.datetime;
@@ -171,7 +169,32 @@ Status FileCreateTablePlugin::generateRow(Row &row,
   row["keywords"] = event.keywords;
   row["data"] = event.data;
 
-  std::cout << "Here's event.data in file_create table: " << event.data << "\n";
+  pt::ptree strTree;
+  std::stringstream stream(event.data);
+
+  try {
+    pt::read_json(stream, strTree);
+  }
+  catch (pt::ptree_error & e) {
+    return Status::failure("Error: event data is illformed" + *e.what());
+  }
+
+  row["subject_user_id"] = strTree.get("EventData.SubjectUserSid", "");
+  row["subject_user_name"] = strTree.get("EventData.SubjectUserName", "");
+  row["subject_domain_name"] = strTree.get("EventData.SubjectDomainName", "");
+  row["subject_logon_id"] = strTree.get("EventData.SubjectLogonId", "");
+  row["object_server"] = strTree.get("EventData.ObjectServer", "");
+  row["object_type"] = strTree.get("EventData.ObjectType", "");
+  row["object_name"] = strTree.get("EventData.ObjectName", "");
+  row["handle_id"] = strTree.get("EventData.HandleId", "");
+  row["access_list"] = strTree.get("EventData.AccessList", "");
+  row["access_mask"] = strTree.get("EventData.AccessMask", "");
+  row["process_id"] = strTree.get("EventData.ProcessId", "");
+  row["process_name"] = strTree.get("EventData.ProcessName", "");
+  row["resource_attributes"] = strTree.get("EventData.ResourceAttributes", "");
+
+  std::cout << "Here's event.data in file_monitoring table: " << event.data << "\n";
+  std::cout << "eventdata object_type: " << strTree.get("EventData.ObjectType", "") << "\n";
 
   return Status::success();
 }

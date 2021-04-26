@@ -144,15 +144,13 @@ NetworkConnTablePlugin::NetworkConnTablePlugin(
 
 Status NetworkConnTablePlugin::generateRow(Row &row,
                                      const WELEvent &event) {
-
   row = {};
 
-  if (event.event_id != 5156)
-  {
+  if (event.event_id != 5156) {
     return Status::success();
   }
 
-  std::cout << "Network conn: event_id: " << event.event_id << "\n";
+  std::cout << "Network conn event: id: " << event.event_id << "\n";
 
   row["zeek_time"] = event.zeek_time;
   row["date_time"] = event.datetime;
@@ -178,65 +176,28 @@ Status NetworkConnTablePlugin::generateRow(Row &row,
     pt::read_json(stream, strTree);
   }
   catch (pt::ptree_error & e) {
-    std::cout << "Error: event data is illformed" << e.what() << "\n";
-    return Status::success();
+    return Status::failure("Error: event data is illformed" + *e.what());
   }
 
-  //Todo
-  std::cout << "eventdata protocol: " << strTree.get("EventData.Protocol", -1) << "\n";
-
-  try {
-    for (pt::ptree::value_type &field : strTree.get_child("EventData"))
-    {
-      if (field.first == "ProcessID") {
-        row["process_id"] = field.second.data();
-      }
-      else if (field.first == "Application") {
-        row["application"] = field.second.data();
-      }
-      else if (field.first == "Direction") {
-        row["direction"] = field.second.data();
-      }
-      else if (field.first == "SourceAddress") {
-        row["source_address"] = field.second.data();
-      }
-      else if (field.first == "SourcePort") {
-        row["source_port"] = field.second.data();
-      }
-      else if (field.first == "DestAddress") {
-        row["dest_address"] = field.second.data();
-      }
-      else if (field.first == "DestPort") {
-        row["dest_port"] = field.second.data();
-      }
-      else if (field.first == "Protocol") {
-        row["protocol"] = field.second.data();
-      }
-      else if (field.first == "FilterRTID") {
-        row["filter_rtid"] = field.second.data();
-      }
-      else if (field.first == "LayerName") {
-        row["layer_name"] = field.second.data();
-      }
-      else if (field.first == "LayerRTID") {
-        row["layer_rtid"] = field.second.data();
-      }
-      else if (field.first == "RemoteUserID") {
-        row["remote_user_id"] = field.second.data();
-      }
-      else if (field.first == "RemoteMachineID") {
-        row["remote_machine_id"] = field.second.data();
-      }
-    }
-  }
-  catch (pt::ptree_error & e)
-  {
-    std::cout << "Error: json is incomplete" << e.what() << "\n";
-    return Status::success();
-  }
+  row["process_id"] = strTree.get("EventData.Protocol", "");
+  row["application"] = strTree.get("EventData.Application", "");
+  row["direction"] = strTree.get("EventData.Direction", "");
+  row["source_address"] = strTree.get("EventData.SourceAddress", "");
+  row["source_port"] = strTree.get("EventData.SourcePort", "");
+  row["dest_address"] = strTree.get("EventData.DestAddress", "");
+  row["dest_port"] = strTree.get("EventData.DestPort", "");
+  row["protocol"] = strTree.get("EventData.Protocol", "");
+  row["filter_rtid"] = strTree.get("EventData.FilterRTID", "");
+  row["layer_name"] = strTree.get("EventData.LayerName", "");
+  row["layer_rtid"] = strTree.get("EventData.LayerRTID", "");
+  row["remote_user_id"] = strTree.get("EventData.RemoteUserID", "");
+  row["remote_machine_id"] = strTree.get("EventData.RemoteMachineID", "");
 
   std::cout << "Here's event.data in network_conn table: " << event.data << "\n";
+  std::cout << "eventdata protocol: " << strTree.get("EventData.Protocol", "") << "\n";
+  std::cout << "eventdata source_address: " << strTree.get("EventData.SourceAddress", "") << "\n";
 
   return Status::success();
+
 }
 } // namespace zeek

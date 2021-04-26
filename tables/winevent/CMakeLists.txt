@@ -33,8 +33,8 @@ function(zeekAgentTablesWinEvent)
             src/processterminationtableplugin.h
             src/processterminationtableplugin.cpp
 
-            src/filecreatetableplugin.h
-            src/filecreatetableplugin.cpp
+            src/filemonitoringtableplugin.h
+            src/filemonitoringtableplugin.cpp
 
             src/regvalmodifiedtableplugin.h
             src/regvalmodifiedtableplugin.cpp

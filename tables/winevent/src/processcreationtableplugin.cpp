@@ -77,9 +77,11 @@ const ProcessCreationTablePlugin::Schema &ProcessCreationTablePlugin::schema() c
       {"new_process_id", IVirtualTable::ColumnType::String},
       {"new_process_name", IVirtualTable::ColumnType::String},
       {"token_elevation_type", IVirtualTable::ColumnType::String},
+      {"process_id", IVirtualTable::ColumnType::String},
       {"command_line", IVirtualTable::ColumnType::String},
       {"target_user_sid", IVirtualTable::ColumnType::String},
       {"target_user_name", IVirtualTable::ColumnType::String},
+      {"target_logon_id", IVirtualTable::ColumnType::String},
       {"target_domain_name", IVirtualTable::ColumnType::String},
       {"parent_process_name", IVirtualTable::ColumnType::String},
       {"mandatory_label", IVirtualTable::ColumnType::String}
@@ -144,15 +146,13 @@ ProcessCreationTablePlugin::ProcessCreationTablePlugin(
 
 Status ProcessCreationTablePlugin::generateRow(Row &row,
                                             const WELEvent &event) {
-
   row = {};
 
-  if (event.event_id != 4688)
-  {
+  if (event.event_id != 4688) {
     return Status::success();
   }
 
-  std::cout << "Process creation: event_id: " << event.event_id << "\n";
+  std::cout << "Process creation event: id: " << event.event_id << "\n";
 
   row["zeek_time"] = event.zeek_time;
   row["date_time"] = event.datetime;
@@ -171,7 +171,34 @@ Status ProcessCreationTablePlugin::generateRow(Row &row,
   row["keywords"] = event.keywords;
   row["data"] = event.data;
 
+  pt::ptree strTree;
+  std::stringstream stream(event.data);
+
+  try {
+    pt::read_json(stream, strTree);
+  }
+  catch (pt::ptree_error & e) {
+    return Status::failure("Error: event data is illformed" + *e.what());
+  }
+
+  row["subject_user_id"] = strTree.get("EventData.SubjectUserSid", "");
+  row["subject_user_name"] = strTree.get("EventData.SubjectUserName", "");
+  row["subject_domain_name"] = strTree.get("EventData.SubjectDomainName", "");
+  row["subject_logon_id"] = strTree.get("EventData.SubjectLogonId", "");
+  row["new_process_id"] = strTree.get("EventData.NewProcessId", "");
+  row["new_process_name"] = strTree.get("EventData.NewProcessName", "");
+  row["token_elevation_type"] = strTree.get("EventData.TokenElevationType", "");
+  row["process_id"] = strTree.get("EventData.ProcessId", "");
+  row["command_line"] = strTree.get("EventData.CommandLine", "");
+  row["target_user_sid"] = strTree.get("EventData.TargetUserSid", "");
+  row["target_user_name"] = strTree.get("EventData.TargetUserName", "");
+  row["target_domain_name"] = strTree.get("EventData.TargetDomainName", "");
+  row["target_logon_id"] = strTree.get("EventData.TargetLogonId", "");
+  row["parent_process_name"] = strTree.get("EventData.ParentProcessName", "");
+  row["mandatory_label"] = strTree.get("EventData.MandatoryLabel", "");
+
   std::cout << "Here's event.data in process_creation table: " << event.data << "\n";
+  std::cout << "eventdata new_process_name: " << strTree.get("EventData.NewProcessName", "") << "\n";
 
   return Status::success();
 }

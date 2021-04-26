@@ -51,7 +51,7 @@ const std::string &RegValModifiedTablePlugin::name() const {
 const RegValModifiedTablePlugin::Schema &RegValModifiedTablePlugin::schema() const {
 
   static const Schema kTableSchema = {
-      // System data
+      // System fields
       {"zeek_time", IVirtualTable::ColumnType::Integer},
       {"date_time", IVirtualTable::ColumnType::String},
 
@@ -69,12 +69,13 @@ const RegValModifiedTablePlugin::Schema &RegValModifiedTablePlugin::schema() con
       {"keywords", IVirtualTable::ColumnType::String},
       {"data", IVirtualTable::ColumnType::String},
 
-      // Event data
+      // Event data fields
       {"subject_user_id", IVirtualTable::ColumnType::String},
       {"subject_user_name", IVirtualTable::ColumnType::String},
       {"subject_domain_name", IVirtualTable::ColumnType::String},
       {"subject_logon_id", IVirtualTable::ColumnType::String},
       {"object_name", IVirtualTable::ColumnType::String},
+      {"object_value_name", IVirtualTable::ColumnType::String},
       {"handle_id", IVirtualTable::ColumnType::String},
       {"operation_type", IVirtualTable::ColumnType::String},
       {"old_value_type", IVirtualTable::ColumnType::String},
@@ -147,7 +148,7 @@ Status RegValModifiedTablePlugin::generateRow(Row &row,
 
   row = {};
 
-  if (event.event_id != 4688)
+  if (event.event_id != 4657)
   {
     return Status::success();
   }
@@ -171,7 +172,33 @@ Status RegValModifiedTablePlugin::generateRow(Row &row,
   row["keywords"] = event.keywords;
   row["data"] = event.data;
 
+  pt::ptree strTree;
+  std::stringstream stream(event.data);
+
+  try {
+    pt::read_json(stream, strTree);
+  }
+  catch (pt::ptree_error & e) {
+    return Status::failure("Error: event data is illformed" + *e.what());
+  }
+
+  row["subject_user_id"] = strTree.get("EventData.SubjectUserSid", "");
+  row["subject_user_name"] = strTree.get("EventData.SubjectUserName", "");
+  row["subject_domain_name"] = strTree.get("EventData.SubjectDomainName", "");
+  row["subject_logon_id"] = strTree.get("EventData.SubjectLogonId", "");
+  row["object_name"] = strTree.get("EventData.ObjectName", "");
+  row["object_value_name"] = strTree.get("EventData.ObjectValueName", "");
+  row["handle_id"] = strTree.get("EventData.HandleId", "");
+  row["operation_type"] = strTree.get("EventData.OperationType", "");
+  row["old_value_type"] = strTree.get("EventData.OldValueType", "");
+  row["old_value"] = strTree.get("EventData.OldValue", "");
+  row["new_value_type"] = strTree.get("EventData.NewValueType", "");
+  row["new_value"] = strTree.get("EventData.NewValue", "");
+  row["process_id"] = strTree.get("EventData.ProcessId", "");
+  row["process_name"] = strTree.get("EventData.ProcessName", "");
+
   std::cout << "Here's event.data in regval_modified table: " << event.data << "\n";
+  std::cout << "eventdata process_name: " << strTree.get("EventData.ProcessName", "") << "\n";
 
   return Status::success();
 }

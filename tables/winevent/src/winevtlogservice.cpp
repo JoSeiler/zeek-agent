@@ -1,8 +1,8 @@
 #include "winevtlogservice.h"
+#include "filemonitoringtableplugin.h"
 #include "networkconntableplugin.h"
 #include "processcreationtableplugin.h"
 #include "processterminationtableplugin.h"
-#include "filecreatetableplugin.h"
 #include "regvalmodifiedtableplugin.h"
 
 #include <algorithm>
@@ -33,7 +33,7 @@ struct WinevtlogService::PrivateData final {
   IVirtualTable::Ref network_conn_table;
   IVirtualTable::Ref process_creation_table;
   IVirtualTable::Ref process_termination_table;
-  IVirtualTable::Ref file_create_table;
+  IVirtualTable::Ref file_monitoring_table;
   IVirtualTable::Ref regval_modified_table;
 };
 
@@ -59,9 +59,9 @@ WinevtlogService::~WinevtlogService() {
            "Failed to unregister the process_termination table");
   }
 
-  if (d->file_create_table) {
+  if (d->file_monitoring_table) {
     auto status =
-        d->virtual_database.unregisterTable(d->file_create_table->name());
+        d->virtual_database.unregisterTable(d->file_monitoring_table->name());
     assert(status.succeeded() &&
            "Failed to unregister the file_create table");
   }
@@ -80,7 +80,8 @@ Status WinevtlogService::exec(std::atomic_bool &terminate) {
 
   while (!terminate) {
 
-    if (!d->network_conn_table || !d->process_creation_table || !d->process_termination_table) {
+    if (!d->network_conn_table || !d->process_creation_table || !d->process_termination_table
+        || d->file_monitoring_table || d->regval_modified_table) {
       d->logger.logMessage(IZeekLogger::Severity::Information,
                            "Table(s) not created yet, sleeping for 1 second");
       std::this_thread::sleep_for(std::chrono::seconds(1U));
@@ -96,8 +97,8 @@ Status WinevtlogService::exec(std::atomic_bool &terminate) {
     auto &process_termination_table_impl =
         *static_cast<ProcessTerminationTablePlugin *>(d->process_termination_table.get());
 
-    auto &file_create_table_impl =
-        *static_cast<FileCreateTablePlugin *>(d->file_create_table.get());
+    auto &file_monitoring_table_impl =
+        *static_cast<FileMonitoringTablePlugin *>(d->file_monitoring_table.get());
 
     auto &regval_modified_table_impl =
         *static_cast<RegValModifiedTablePlugin *>(d->regval_modified_table.get());
@@ -133,7 +134,7 @@ Status WinevtlogService::exec(std::atomic_bool &terminate) {
           status.message());
     }
 
-    status = file_create_table_impl.processEvents(event_list);
+    status = file_monitoring_table_impl.processEvents(event_list);
     if (!status.succeeded()) {
       d->logger.logMessage(
           IZeekLogger::Severity::Error,
@@ -205,13 +206,13 @@ WinevtlogService::WinevtlogService(IVirtualDatabase &virtual_database,
     throw status;
   }
 
-  status = FileCreateTablePlugin::create(d->file_create_table,
+  status = FileMonitoringTablePlugin::create(d->file_monitoring_table,
                                                  configuration, logger);
   if (!status.succeeded()) {
     throw status;
   }
 
-  status = d->virtual_database.registerTable(d->file_create_table);
+  status = d->virtual_database.registerTable(d->file_monitoring_table);
   if (!status.succeeded()) {
     throw status;
   }
