@@ -24,6 +24,9 @@ function(zeekAgentTablesWinEvent)
             include/zeek/winevtlogservicefactory.h
             src/winevtlogservicefactory.cpp
 
+            src/communityidgenerator.h
+            src/communityidgenerator.cpp
+
             src/networkconntableplugin.h
             src/networkconntableplugin.cpp
 

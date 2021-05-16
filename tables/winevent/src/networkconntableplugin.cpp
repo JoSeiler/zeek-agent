@@ -1,4 +1,5 @@
 #include "networkconntableplugin.h"
+#include "communityidgenerator.h"
 
 #include <chrono>
 #include <limits>
@@ -192,6 +193,12 @@ Status NetworkConnTablePlugin::generateRow(Row &row,
   row["layer_rtid"] = strTree.get("EventData.LayerRTID", "");
   row["remote_user_id"] = strTree.get("EventData.RemoteUserID", "");
   row["remote_machine_id"] = strTree.get("EventData.RemoteMachineID", "");
+
+  //std::string proto = strTree.get("EventData.Protocol", "");
+
+  //if ( checkProtocol( proto ) {
+  //  std::cout << "supported";
+  //}
 
   std::cout << "Here's event.data in network_conn table: " << event.data << "\n";
   std::cout << "eventdata protocol: " << strTree.get("EventData.Protocol", "") << "\n";
