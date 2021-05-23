@@ -180,17 +180,17 @@ Status NetworkConnTablePlugin::generateRow(Row &row,
     return Status::failure("Error: event data is illformed" + *e.what());
   }
 
-  row["process_id"] = strTree.get("EventData.Protocol", "");
+  row["process_id"] = static_cast<std::int64_t>(strTree.get("EventData.Protocol", -1));
   row["application"] = strTree.get("EventData.Application", "");
   row["direction"] = strTree.get("EventData.Direction", "");
   row["source_address"] = strTree.get("EventData.SourceAddress", "");
-  row["source_port"] = strTree.get("EventData.SourcePort", "");
+  row["source_port"] = static_cast<std::int64_t>(strTree.get("EventData.SourcePort", -1));
   row["dest_address"] = strTree.get("EventData.DestAddress", "");
-  row["dest_port"] = strTree.get("EventData.DestPort", "");
-  row["protocol"] = strTree.get("EventData.Protocol", "");
-  row["filter_rtid"] = strTree.get("EventData.FilterRTID", "");
+  row["dest_port"] = static_cast<std::int64_t>(strTree.get("EventData.DestPort", -1));
+  row["protocol"] = static_cast<std::int64_t>(strTree.get("EventData.Protocol", -1));
+  row["filter_rtid"] = static_cast<std::int64_t>(strTree.get("EventData.FilterRTID", -1));
   row["layer_name"] = strTree.get("EventData.LayerName", "");
-  row["layer_rtid"] = strTree.get("EventData.LayerRTID", "");
+  row["layer_rtid"] = static_cast<std::int64_t>(strTree.get("EventData.LayerRTID", -1));
   row["remote_user_id"] = strTree.get("EventData.RemoteUserID", "");
   row["remote_machine_id"] = strTree.get("EventData.RemoteMachineID", "");
 
