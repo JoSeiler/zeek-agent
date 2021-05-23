@@ -81,7 +81,7 @@ Status WinevtlogService::exec(std::atomic_bool &terminate) {
   while (!terminate) {
 
     if (!d->network_conn_table || !d->process_creation_table || !d->process_termination_table
-        || d->file_monitoring_table || d->regval_modified_table) {
+        || !d->file_monitoring_table || !d->regval_modified_table) {
       d->logger.logMessage(IZeekLogger::Severity::Information,
                            "Table(s) not created yet, sleeping for 1 second");
       std::this_thread::sleep_for(std::chrono::seconds(1U));
