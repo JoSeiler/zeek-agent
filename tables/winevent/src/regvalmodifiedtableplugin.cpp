@@ -153,7 +153,8 @@ Status RegValModifiedTablePlugin::generateRow(Row &row,
     return Status::success();
   }
 
-  std::cout << "Registry value modified: event_id: " << event.event_id << "\n";
+  std::cout << "- - -" << "\n";
+  std::cout << event.event_id << " - Registry value modification event" << "\n";
 
   row["zeek_time"] = event.zeek_time;
   row["date_time"] = event.datetime;
@@ -197,8 +198,8 @@ Status RegValModifiedTablePlugin::generateRow(Row &row,
   row["process_id"] = strTree.get("EventData.ProcessId", "");
   row["process_name"] = strTree.get("EventData.ProcessName", "");
 
-  std::cout << "Here's event.data in regval_modified table: " << event.data << "\n";
-  std::cout << "eventdata process_name: " << strTree.get("EventData.ProcessName", "") << "\n";
+  std::cout << "event.data: " << event.data << "\n";
+  std::cout << "- - -" << "\n";
 
   return Status::success();
 }

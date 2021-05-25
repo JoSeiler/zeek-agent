@@ -150,7 +150,8 @@ Status ProcessCreationTablePlugin::generateRow(Row &row,
     return Status::success();
   }
 
-  std::cout << "Process creation event: id: " << event.event_id << "\n";
+  std::cout << "- - -" << "\n";
+  std::cout << event.event_id << " - Process creation event" << "\n";
 
   row["zeek_time"] = event.zeek_time;
   row["date_time"] = event.datetime;
@@ -195,8 +196,8 @@ Status ProcessCreationTablePlugin::generateRow(Row &row,
   row["parent_process_name"] = strTree.get("EventData.ParentProcessName", "");
   row["mandatory_label"] = strTree.get("EventData.MandatoryLabel", "");
 
-  std::cout << "Here's event.data in process_creation table: " << event.data << "\n";
-  std::cout << "eventdata new_process_name: " << strTree.get("EventData.NewProcessName", "") << "\n";
+  std::cout << "event.data: " << event.data << "\n";
+  std::cout << "- - -" << "\n";
 
   return Status::success();
 }

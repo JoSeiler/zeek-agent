@@ -141,12 +141,13 @@ Status ProcessTerminationTablePlugin::generateRow(Row &row,
 
   row = {};
 
-  if (event.event_id != 4688)
+  if (event.event_id != 4689)
   {
     return Status::success();
   }
 
-  std::cout << "Process termination: event_id: " << event.event_id << "\n";
+  std::cout << "- - -" << "\n";
+  std::cout << event.event_id << " - Process termination event" << "\n";
 
   row["zeek_time"] = event.zeek_time;
   row["date_time"] = event.datetime;
@@ -183,8 +184,8 @@ Status ProcessTerminationTablePlugin::generateRow(Row &row,
   row["process_id"] = strTree.get("EventData.ProcessId", "");
   row["process_name"] = strTree.get("EventData.ProcessName", "");
 
-  std::cout << "Here's event.data in process_termination table: " << event.data << "\n";
-  std::cout << "eventdata process_name: " << strTree.get("EventData.ProcessName", "") << "\n";
+  std::cout << "event.data: " << event.data << "\n";
+  std::cout << "- - -" << "\n";
 
   return Status::success();
 }

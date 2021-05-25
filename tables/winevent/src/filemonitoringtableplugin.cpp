@@ -146,11 +146,12 @@ Status FileMonitoringTablePlugin::generateRow(Row &row,
                                             const WELEvent &event) {
   row = {};
 
-  if (event.event_id != 4688) {
+  if (event.event_id != 4663) {
     return Status::success();
   }
 
-  std::cout << "File create event: id: " << event.event_id << "\n";
+  std::cout << "- - -" << "\n";
+  std::cout << event.event_id << " - File monitoring event" << "\n";
 
   row["zeek_time"] = event.zeek_time;
   row["date_time"] = event.datetime;
@@ -193,8 +194,8 @@ Status FileMonitoringTablePlugin::generateRow(Row &row,
   row["process_name"] = strTree.get("EventData.ProcessName", "");
   row["resource_attributes"] = strTree.get("EventData.ResourceAttributes", "");
 
-  std::cout << "Here's event.data in file_monitoring table: " << event.data << "\n";
-  std::cout << "eventdata object_type: " << strTree.get("EventData.ObjectType", "") << "\n";
+  std::cout << "event.data: " << event.data << "\n";
+  std::cout << "- - -" << "\n";
 
   return Status::success();
 }

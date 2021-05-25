@@ -151,7 +151,8 @@ Status NetworkConnTablePlugin::generateRow(Row &row,
     return Status::success();
   }
 
-  std::cout << "Network conn event: id: " << event.event_id << "\n";
+  std::cout << "- - -" << "\n";
+  std::cout << event.event_id << " - Network connection event" << "\n";
 
   row["zeek_time"] = event.zeek_time;
   row["date_time"] = event.datetime;
@@ -200,9 +201,8 @@ Status NetworkConnTablePlugin::generateRow(Row &row,
   //  std::cout << "supported";
   //}
 
-  std::cout << "Here's event.data in network_conn table: " << event.data << "\n";
-  std::cout << "eventdata protocol: " << strTree.get("EventData.Protocol", "") << "\n";
-  std::cout << "eventdata source_address: " << strTree.get("EventData.SourceAddress", "") << "\n";
+  std::cout << "event.data: " << event.data << "\n";
+  std::cout << "- - -" << "\n";
 
   return Status::success();
 
