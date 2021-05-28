@@ -1,5 +1,5 @@
 #include "networkconntableplugin.h"
-#include "communityidgenerator.h"
+//#include "communityidgenerator.h"
 
 #include <chrono>
 #include <limits>
@@ -52,21 +52,19 @@ const std::string &NetworkConnTablePlugin::name() const {
 const NetworkConnTablePlugin::Schema &NetworkConnTablePlugin::schema() const {
 
   static const Schema kTableSchema = {
-      // System data
       {"zeek_time", IVirtualTable::ColumnType::Integer},
       {"date_time", IVirtualTable::ColumnType::String},
 
+      // System data
       {"source", IVirtualTable::ColumnType::String},
       {"provider_name", IVirtualTable::ColumnType::String},
       {"provider_guid", IVirtualTable::ColumnType::String},
       {"computer_name", IVirtualTable::ColumnType::String},
-
       {"event_id", IVirtualTable::ColumnType::Integer},
       {"task_id", IVirtualTable::ColumnType::Integer},
       {"level", IVirtualTable::ColumnType::Integer},
       {"pid", IVirtualTable::ColumnType::Integer},
       {"tid", IVirtualTable::ColumnType::Integer},
-
       {"keywords", IVirtualTable::ColumnType::String},
       {"data", IVirtualTable::ColumnType::String},
 

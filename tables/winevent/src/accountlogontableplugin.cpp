@@ -1,4 +1,4 @@
-#include "regvalmodifiedtableplugin.h"
+#include "accountlogontableplugin.h"
 
 #include <chrono>
 #include <limits>
@@ -11,7 +11,7 @@ namespace pt = boost::property_tree;
 
 namespace zeek {
 
-struct RegValModifiedTablePlugin::PrivateData final {
+struct AccountLogonTablePlugin::PrivateData final {
   PrivateData(IZeekConfiguration &configuration_, IZeekLogger &logger_)
       : configuration(configuration_), logger(logger_) {}
 
@@ -23,12 +23,12 @@ struct RegValModifiedTablePlugin::PrivateData final {
   std::size_t max_queued_row_count{0U};
 };
 
-Status RegValModifiedTablePlugin::create(Ref &obj,
-                                       IZeekConfiguration &configuration,
-                                       IZeekLogger &logger) {
+Status AccountLogonTablePlugin::create(Ref &obj,
+                                      IZeekConfiguration &configuration,
+                                      IZeekLogger &logger) {
 
   try {
-    obj.reset(new RegValModifiedTablePlugin(configuration, logger));
+    obj.reset(new AccountLogonTablePlugin(configuration, logger));
 
     return Status::success();
 
@@ -40,15 +40,15 @@ Status RegValModifiedTablePlugin::create(Ref &obj,
   }
 }
 
-RegValModifiedTablePlugin::~RegValModifiedTablePlugin() {}
+AccountLogonTablePlugin::~AccountLogonTablePlugin() {}
 
-const std::string &RegValModifiedTablePlugin::name() const {
-  static const std::string kTableName{"regval_modified"};
+const std::string &AccountLogonTablePlugin::name() const {
+  static const std::string kTableName{"account_logon"};
 
   return kTableName;
 }
 
-const RegValModifiedTablePlugin::Schema &RegValModifiedTablePlugin::schema() const {
+const AccountLogonTablePlugin::Schema &AccountLogonTablePlugin::schema() const {
 
   static const Schema kTableSchema = {
       {"zeek_time", IVirtualTable::ColumnType::Integer},
@@ -72,22 +72,35 @@ const RegValModifiedTablePlugin::Schema &RegValModifiedTablePlugin::schema() con
       {"subject_user_name", IVirtualTable::ColumnType::String},
       {"subject_domain_name", IVirtualTable::ColumnType::String},
       {"subject_logon_id", IVirtualTable::ColumnType::String},
-      {"object_name", IVirtualTable::ColumnType::String},
-      {"object_value_name", IVirtualTable::ColumnType::String},
-      {"handle_id", IVirtualTable::ColumnType::String},
-      {"operation_type", IVirtualTable::ColumnType::String},
-      {"old_value_type", IVirtualTable::ColumnType::String},
-      {"old_value", IVirtualTable::ColumnType::String},
-      {"new_value_type", IVirtualTable::ColumnType::String},
-      {"new_value", IVirtualTable::ColumnType::String},
+      {"target_user_sid", IVirtualTable::ColumnType::String},
+      {"target_user_name", IVirtualTable::ColumnType::String},
+      {"target_domain_name", IVirtualTable::ColumnType::String},
+      {"target_logon_id", IVirtualTable::ColumnType::String},
+      {"logon_type", IVirtualTable::ColumnType::Integer},
+      {"logon_process_name", IVirtualTable::ColumnType::String},
+      {"authentication_package_name", IVirtualTable::ColumnType::String},
+      {"workstation_name", IVirtualTable::ColumnType::String},
+      {"logon_guid", IVirtualTable::ColumnType::String},
+      {"transmitted_services", IVirtualTable::ColumnType::String},
+      {"lm_package_name", IVirtualTable::ColumnType::String},
+      {"key_length", IVirtualTable::ColumnType::Integer},
       {"process_id", IVirtualTable::ColumnType::String},
       {"process_name", IVirtualTable::ColumnType::String},
+      {"ip_address", IVirtualTable::ColumnType::String},
+      {"ip_port", IVirtualTable::ColumnType::Integer},
+      {"impersonation_level", IVirtualTable::ColumnType::String},
+      {"restricted_admin_mode", IVirtualTable::ColumnType::String},
+      {"target_outbound_user_name", IVirtualTable::ColumnType::String},
+      {"target_outbound_domain_name", IVirtualTable::ColumnType::String},
+      {"virtual_account", IVirtualTable::ColumnType::String},
+      {"target_linked_logon_id", IVirtualTable::ColumnType::String},
+      {"elevated_token", IVirtualTable::ColumnType::String}
   };
 
   return kTableSchema;
 }
 
-Status RegValModifiedTablePlugin::generateRowList(RowList &row_list) {
+Status AccountLogonTablePlugin::generateRowList(RowList &row_list) {
   std::lock_guard<std::mutex> lock(d->row_list_mutex);
 
   row_list = std::move(d->row_list);
@@ -96,7 +109,7 @@ Status RegValModifiedTablePlugin::generateRowList(RowList &row_list) {
   return Status::success();
 }
 
-Status RegValModifiedTablePlugin::processEvents(
+Status AccountLogonTablePlugin::processEvents(
     const IWinevtlogConsumer::EventList &event_list) {
 
   for (const auto &event : event_list) {
@@ -120,7 +133,7 @@ Status RegValModifiedTablePlugin::processEvents(
     auto rows_to_remove = d->row_list.size() - d->max_queued_row_count;
 
     d->logger.logMessage(IZeekLogger::Severity::Warning,
-                         "regval_modified_events: Dropping " +
+                         "account_logon_events: Dropping " +
                          std::to_string(rows_to_remove) +
                          " rows (max row count is set to " +
                          std::to_string(d->max_queued_row_count) + ")");
@@ -135,24 +148,22 @@ Status RegValModifiedTablePlugin::processEvents(
   return Status::success();
 }
 
-RegValModifiedTablePlugin::RegValModifiedTablePlugin(
+AccountLogonTablePlugin::AccountLogonTablePlugin(
     IZeekConfiguration &configuration, IZeekLogger &logger)
     : d(new PrivateData(configuration, logger)) {
   d->max_queued_row_count = d->configuration.maxQueuedRowCount();
 }
 
-Status RegValModifiedTablePlugin::generateRow(Row &row,
-                                            const WELEvent &event) {
-
+Status AccountLogonTablePlugin::generateRow(Row &row,
+                                           const WELEvent &event) {
   row = {};
 
-  if (event.event_id != 4657)
-  {
+  if (event.event_id != 4624) {
     return Status::success();
   }
 
   std::cout << "- - -" << "\n";
-  std::cout << event.event_id << " - Registry value modification event" << "\n";
+  std::cout << event.event_id << " - Successful account logon event" << "\n";
 
   row["zeek_time"] = event.zeek_time;
   row["date_time"] = event.datetime;
@@ -161,13 +172,11 @@ Status RegValModifiedTablePlugin::generateRow(Row &row,
   row["provider_name"] = event.provider_name;
   row["provider_guid"] = event.provider_guid;
   row["computer_name"] = event.computer_name;
-
   row["event_id"] = event.event_id;
   row["task_id"] = event.task_id;
   row["level"] = event.level;
   row["pid"] = event.pid;
   row["tid"] = event.tid;
-
   row["keywords"] = event.keywords;
   row["data"] = event.data;
 
@@ -181,24 +190,38 @@ Status RegValModifiedTablePlugin::generateRow(Row &row,
     return Status::failure("Error: event data is illformed" + *e.what());
   }
 
-  row["subject_user_id"] = strTree.get("EventData.SubjectUserSid", "");
+  row["subject_user_sid"] = strTree.get("EventData.SubjectUserSid", "");
   row["subject_user_name"] = strTree.get("EventData.SubjectUserName", "");
   row["subject_domain_name"] = strTree.get("EventData.SubjectDomainName", "");
   row["subject_logon_id"] = strTree.get("EventData.SubjectLogonId", "");
-  row["object_name"] = strTree.get("EventData.ObjectName", "");
-  row["object_value_name"] = strTree.get("EventData.ObjectValueName", "");
-  row["handle_id"] = strTree.get("EventData.HandleId", "");
-  row["operation_type"] = strTree.get("EventData.OperationType", "");
-  row["old_value_type"] = strTree.get("EventData.OldValueType", "");
-  row["old_value"] = strTree.get("EventData.OldValue", "");
-  row["new_value_type"] = strTree.get("EventData.NewValueType", "");
-  row["new_value"] = strTree.get("EventData.NewValue", "");
+  row["target_user_sid"] = strTree.get("EventData.TargetUserSid", "");
+  row["target_user_name"] = strTree.get("EventData.TargetUserName", "");
+  row["target_domain_name"] = strTree.get("EventData.TargetDomainName", "");
+  row["target_logon_id"] = strTree.get("EventData.TargetLogonId", "");
+  row["logon_type"] = static_cast<std::int64_t>(strTree.get("EventData.LogonType", -1));
+  row["logon_process_name"] = strTree.get("EventData.LogonProcessName", "");
+  row["authentication_package_name"] = strTree.get("EventData.AuthenticationPackageName", "");
+  row["workstation_name"] = strTree.get("EventData.WorkstationName", "");
+  row["logon_guid"] = strTree.get("EventData.LogonGuid", "");
+  row["transmitted_services"] = strTree.get("EventData.TransmittedServices", "");
+  row["lm_package_name"] = strTree.get("EventData.LmPackageName", "");
+  row["key_length"] = static_cast<std::int64_t>(strTree.get("EventData.KeyLength", -1));
   row["process_id"] = strTree.get("EventData.ProcessId", "");
   row["process_name"] = strTree.get("EventData.ProcessName", "");
+  row["ip_address"] = strTree.get("EventData.IpAddress", "");
+  row["ip_port"] = static_cast<std::int64_t>(strTree.get("EventData.IpPort", -1));
+  row["impersonation_level"] = strTree.get("EventData.ImpersonationLevel", "");
+  row["restricted_admin_mode"] = strTree.get("EventData.RestrictedAdminMode", "");
+  row["target_outbound_user_name"] = strTree.get("EventData.TargetOutboundUserName", "");
+  row["target_outbound_domain_name"] = strTree.get("EventData.TargetOutboundDomainName", "");
+  row["virtual_account"] = strTree.get("EventData.VirtualAccount", "");
+  row["target_linked_logon_id"] = strTree.get("EventData.TargetLinkedLogonId", "");
+  row["elevated_token"] = strTree.get("EventData.ElevatedToken", "");
 
   std::cout << "event.data: " << event.data << "\n";
   std::cout << "- - -" << "\n";
 
   return Status::success();
+
 }
 } // namespace zeek

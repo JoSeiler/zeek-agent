@@ -1,4 +1,5 @@
 #include "winevtlogservice.h"
+#include "accountlogontableplugin.h"
 #include "filemonitoringtableplugin.h"
 #include "networkconntableplugin.h"
 #include "processcreationtableplugin.h"
@@ -30,6 +31,7 @@ struct WinevtlogService::PrivateData final {
 
   IWinevtlogConsumer::Ref winevtlog_consumer;
 
+  IVirtualTable::Ref account_logon_table;
   IVirtualTable::Ref network_conn_table;
   IVirtualTable::Ref process_creation_table;
   IVirtualTable::Ref process_termination_table;
@@ -38,6 +40,13 @@ struct WinevtlogService::PrivateData final {
 };
 
 WinevtlogService::~WinevtlogService() {
+  if (d->account_logon_table) {
+    auto status =
+        d->virtual_database.unregisterTable(d->account_logon_table->name());
+    assert(status.succeeded() &&
+           "Failed to unregister the account_logon table");
+  }
+
   if (d->network_conn_table) {
     auto status =
         d->virtual_database.unregisterTable(d->network_conn_table->name());
@@ -81,12 +90,15 @@ Status WinevtlogService::exec(std::atomic_bool &terminate) {
   while (!terminate) {
 
     if (!d->network_conn_table || !d->process_creation_table || !d->process_termination_table
-        || !d->file_monitoring_table || !d->regval_modified_table) {
+        || !d->file_monitoring_table || !d->regval_modified_table || !d->account_logon_table) {
       d->logger.logMessage(IZeekLogger::Severity::Information,
                            "Table(s) not created yet, sleeping for 1 second");
       std::this_thread::sleep_for(std::chrono::seconds(1U));
       continue;
     }
+
+    auto &account_logon_table_impl =
+        *static_cast<AccountLogonTablePlugin *>(d->account_logon_table.get());
 
     auto &network_conn_table_impl =
         *static_cast<NetworkConnTablePlugin *>(d->network_conn_table.get());
@@ -115,6 +127,14 @@ Status WinevtlogService::exec(std::atomic_bool &terminate) {
       d->logger.logMessage(
           IZeekLogger::Severity::Error,
           "The network_conn table failed to process some events: " +
+          status.message());
+    }
+
+    status = account_logon_table_impl.processEvents(event_list);
+    if (!status.succeeded()) {
+      d->logger.logMessage(
+          IZeekLogger::Severity::Error,
+          "The account_logon table failed to process some events: " +
           status.message());
     }
 
@@ -180,6 +200,17 @@ WinevtlogService::WinevtlogService(IVirtualDatabase &virtual_database,
   }
 
   status = d->virtual_database.registerTable(d->network_conn_table);
+  if (!status.succeeded()) {
+    throw status;
+  }
+
+  status = AccountLogonTablePlugin::create(d->account_logon_table,
+                                              configuration, logger);
+  if (!status.succeeded()) {
+    throw status;
+  }
+
+  status = d->virtual_database.registerTable(d->account_logon_table);
   if (!status.succeeded()) {
     throw status;
   }

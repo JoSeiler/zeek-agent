@@ -51,25 +51,23 @@ const std::string &FileMonitoringTablePlugin::name() const {
 const FileMonitoringTablePlugin::Schema &FileMonitoringTablePlugin::schema() const {
 
   static const Schema kTableSchema = {
-      // System fields
       {"zeek_time", IVirtualTable::ColumnType::Integer},
       {"date_time", IVirtualTable::ColumnType::String},
 
+      // System data
       {"source", IVirtualTable::ColumnType::String},
       {"provider_name", IVirtualTable::ColumnType::String},
       {"provider_guid", IVirtualTable::ColumnType::String},
       {"computer_name", IVirtualTable::ColumnType::String},
-
       {"event_id", IVirtualTable::ColumnType::Integer},
       {"task_id", IVirtualTable::ColumnType::Integer},
       {"level", IVirtualTable::ColumnType::Integer},
       {"pid", IVirtualTable::ColumnType::Integer},
       {"tid", IVirtualTable::ColumnType::Integer},
-
       {"keywords", IVirtualTable::ColumnType::String},
       {"data", IVirtualTable::ColumnType::String},
 
-      // Event data fields
+      // Event data
       {"subject_user_id", IVirtualTable::ColumnType::String},
       {"subject_user_name", IVirtualTable::ColumnType::String},
       {"subject_domain_name", IVirtualTable::ColumnType::String},
@@ -121,7 +119,7 @@ Status FileMonitoringTablePlugin::processEvents(
     auto rows_to_remove = d->row_list.size() - d->max_queued_row_count;
 
     d->logger.logMessage(IZeekLogger::Severity::Warning,
-                         "file_create_events: Dropping " +
+                         "file_monitoring_events: Dropping " +
                          std::to_string(rows_to_remove) +
                          " rows (max row count is set to " +
                          std::to_string(d->max_queued_row_count) + ")");
