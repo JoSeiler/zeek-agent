@@ -5,8 +5,8 @@
 #include <zeek/izeekservicemanager.h>
 
 namespace zeek {
-/// \brief An Zeek service that acts as Windows event publisher
-///        using Todo
+/// \brief An Zeek service that acts as Windows Event Log publisher
+///        using a push subscription
 class WinevtlogService final : public IZeekService {
   struct PrivateData;
   std::unique_ptr<PrivateData> d;

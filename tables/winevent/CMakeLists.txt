@@ -27,6 +27,9 @@ function(zeekAgentTablesWinEvent)
             src/communityidgenerator.h
             src/communityidgenerator.cpp
 
+            src/winevtlogtableplugin.h
+            src/winevtlogtableplugin.cpp
+
             src/accountlogontableplugin.h
             src/accountlogontableplugin.cpp
 

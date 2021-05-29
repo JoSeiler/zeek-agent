@@ -5,6 +5,7 @@
 #include "processcreationtableplugin.h"
 #include "processterminationtableplugin.h"
 #include "regvalmodifiedtableplugin.h"
+#include "winevtlogtableplugin.h"
 
 #include <algorithm>
 #include <cassert>
@@ -37,6 +38,7 @@ struct WinevtlogService::PrivateData final {
   IVirtualTable::Ref process_termination_table;
   IVirtualTable::Ref file_monitoring_table;
   IVirtualTable::Ref regval_modified_table;
+  IVirtualTable::Ref winevtlog_table;
 };
 
 WinevtlogService::~WinevtlogService() {
@@ -81,6 +83,13 @@ WinevtlogService::~WinevtlogService() {
     assert(status.succeeded() &&
            "Failed to unregister the regval_modified table");
   }
+
+  if (d->winevtlog_table) {
+    auto status =
+        d->virtual_database.unregisterTable(d->winevtlog_table->name());
+    assert(status.succeeded() &&
+           "Failed to unregister the winevtlog table");
+  }
 }
 
 const std::string &WinevtlogService::name() const { return kServiceName; }
@@ -90,7 +99,8 @@ Status WinevtlogService::exec(std::atomic_bool &terminate) {
   while (!terminate) {
 
     if (!d->network_conn_table || !d->process_creation_table || !d->process_termination_table
-        || !d->file_monitoring_table || !d->regval_modified_table || !d->account_logon_table) {
+        || !d->file_monitoring_table || !d->regval_modified_table || !d->account_logon_table
+        || !d->winevtlog_table) {
       d->logger.logMessage(IZeekLogger::Severity::Information,
                            "Table(s) not created yet, sleeping for 1 second");
       std::this_thread::sleep_for(std::chrono::seconds(1U));
@@ -114,6 +124,9 @@ Status WinevtlogService::exec(std::atomic_bool &terminate) {
 
     auto &regval_modified_table_impl =
         *static_cast<RegValModifiedTablePlugin *>(d->regval_modified_table.get());
+
+    auto &winevtlog_table_impl =
+        *static_cast<RegValModifiedTablePlugin *>(d->winevtlog_table.get());
 
     IWinevtlogConsumer::EventList event_list;
     d->winevtlog_consumer->getEvents(event_list);
@@ -167,6 +180,14 @@ Status WinevtlogService::exec(std::atomic_bool &terminate) {
       d->logger.logMessage(
           IZeekLogger::Severity::Error,
           "The regval_modified table failed to process some events: " +
+          status.message());
+    }
+
+    status = winevtlog_table_impl.processEvents(event_list);
+    if (!status.succeeded()) {
+      d->logger.logMessage(
+          IZeekLogger::Severity::Error,
+          "The winevtlog table failed to process some events: " +
           status.message());
     }
   }
@@ -255,6 +276,17 @@ WinevtlogService::WinevtlogService(IVirtualDatabase &virtual_database,
   }
 
   status = d->virtual_database.registerTable(d->regval_modified_table);
+  if (!status.succeeded()) {
+    throw status;
+  }
+
+  status = WinevtlogTablePlugin::create(d->winevtlog_table,
+                                             configuration, logger);
+  if (!status.succeeded()) {
+    throw status;
+  }
+
+  status = d->virtual_database.registerTable(d->winevtlog_table);
   if (!status.succeeded()) {
     throw status;
   }
