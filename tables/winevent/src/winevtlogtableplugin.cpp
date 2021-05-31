@@ -129,8 +129,7 @@ Status WinevtlogTablePlugin::generateRow(Row &row,
                                                const WELEvent &event) {
   row = {};
 
-  std::cout << "- - -" << "\n";
-  std::cout << event.event_id << " - Windows Event Log event" << "\n";
+  std::cout << "WEL event ID: " << event.event_id << "\n";
 
   row["zeek_time"] = event.zeek_time;
   row["date_time"] = event.datetime;
@@ -145,9 +144,6 @@ Status WinevtlogTablePlugin::generateRow(Row &row,
   row["tid"] = event.tid;
   row["keywords"] = event.keywords;
   row["data"] = event.data;
-
-  std::cout << "event.data: " << event.data << "\n";
-  std::cout << "- - -" << "\n";
 
   return Status::success();
 }
