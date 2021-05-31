@@ -126,7 +126,7 @@ Status WinevtlogService::exec(std::atomic_bool &terminate) {
         *static_cast<RegValModifiedTablePlugin *>(d->regval_modified_table.get());
 
     auto &winevtlog_table_impl =
-        *static_cast<RegValModifiedTablePlugin *>(d->winevtlog_table.get());
+        *static_cast<WinevtlogTablePlugin *>(d->winevtlog_table.get());
 
     IWinevtlogConsumer::EventList event_list;
     d->winevtlog_consumer->getEvents(event_list);
