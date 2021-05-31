@@ -149,7 +149,7 @@ Status ObjAccessAttemptTablePlugin::generateRow(Row &row,
   }
 
   std::cout << "- - -" << "\n";
-  std::cout << event.event_id << " -Object access attempt event" << "\n";
+  std::cout << event.event_id << " - Object access attempt event" << "\n";
 
   row["zeek_time"] = event.zeek_time;
   row["date_time"] = event.datetime;
