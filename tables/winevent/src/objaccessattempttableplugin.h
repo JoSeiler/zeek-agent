@@ -7,7 +7,7 @@
 
 namespace zeek {
 /// \brief A virtual table plugin that presents WEL object access attempt events (ID 4663)
-class FileMonitoringTablePlugin final : public IVirtualTable {
+class ObjAccessAttemptTablePlugin final : public IVirtualTable {
   struct PrivateData;
   std::unique_ptr<PrivateData> d;
 
@@ -21,7 +21,7 @@ public:
                        IZeekLogger &logger);
 
   /// \brief Destructor
-  virtual ~FileMonitoringTablePlugin() override;
+  virtual ~ObjAccessAttemptTablePlugin() override;
 
   /// \return The table name
   virtual const std::string &name() const override;
@@ -44,7 +44,7 @@ protected:
   /// \brief Constructor
   /// \param configuration An initialized configuration object
   /// \param logger An initialized logger object
-  FileMonitoringTablePlugin(IZeekConfiguration &configuration,
+  ObjAccessAttemptTablePlugin(IZeekConfiguration &configuration,
                           IZeekLogger &logger);
 
 public:

@@ -1,4 +1,4 @@
-#include "filemonitoringtableplugin.h"
+#include "objaccessattempttableplugin.h"
 
 #include <chrono>
 #include <limits>
@@ -11,7 +11,7 @@ namespace pt = boost::property_tree;
 
 namespace zeek {
 
-struct FileMonitoringTablePlugin::PrivateData final {
+struct ObjAccessAttemptTablePlugin::PrivateData final {
   PrivateData(IZeekConfiguration &configuration_, IZeekLogger &logger_)
       : configuration(configuration_), logger(logger_) {}
 
@@ -23,12 +23,12 @@ struct FileMonitoringTablePlugin::PrivateData final {
   std::size_t max_queued_row_count{0U};
 };
 
-Status FileMonitoringTablePlugin::create(Ref &obj,
+Status ObjAccessAttemptTablePlugin::create(Ref &obj,
                                        IZeekConfiguration &configuration,
                                        IZeekLogger &logger) {
 
   try {
-    obj.reset(new FileMonitoringTablePlugin(configuration, logger));
+    obj.reset(new ObjAccessAttemptTablePlugin(configuration, logger));
 
     return Status::success();
 
@@ -40,15 +40,15 @@ Status FileMonitoringTablePlugin::create(Ref &obj,
   }
 }
 
-FileMonitoringTablePlugin::~FileMonitoringTablePlugin() {}
+ObjAccessAttemptTablePlugin::~ObjAccessAttemptTablePlugin() {}
 
-const std::string &FileMonitoringTablePlugin::name() const {
-  static const std::string kTableName{"file_monitoring"};
+const std::string &ObjAccessAttemptTablePlugin::name() const {
+  static const std::string kTableName{"obj_access_attempt"};
 
   return kTableName;
 }
 
-const FileMonitoringTablePlugin::Schema &FileMonitoringTablePlugin::schema() const {
+const ObjAccessAttemptTablePlugin::Schema &ObjAccessAttemptTablePlugin::schema() const {
 
   static const Schema kTableSchema = {
       {"zeek_time", IVirtualTable::ColumnType::Integer},
@@ -86,7 +86,7 @@ const FileMonitoringTablePlugin::Schema &FileMonitoringTablePlugin::schema() con
   return kTableSchema;
 }
 
-Status FileMonitoringTablePlugin::generateRowList(RowList &row_list) {
+Status ObjAccessAttemptTablePlugin::generateRowList(RowList &row_list) {
   std::lock_guard<std::mutex> lock(d->row_list_mutex);
 
   row_list = std::move(d->row_list);
@@ -95,7 +95,7 @@ Status FileMonitoringTablePlugin::generateRowList(RowList &row_list) {
   return Status::success();
 }
 
-Status FileMonitoringTablePlugin::processEvents(
+Status ObjAccessAttemptTablePlugin::processEvents(
     const IWinevtlogConsumer::EventList &event_list) {
 
   for (const auto &event : event_list) {
@@ -119,7 +119,7 @@ Status FileMonitoringTablePlugin::processEvents(
     auto rows_to_remove = d->row_list.size() - d->max_queued_row_count;
 
     d->logger.logMessage(IZeekLogger::Severity::Warning,
-                         "file_monitoring_events: Dropping " +
+                         "object_access_attempt_events: Dropping " +
                          std::to_string(rows_to_remove) +
                          " rows (max row count is set to " +
                          std::to_string(d->max_queued_row_count) + ")");
@@ -134,13 +134,13 @@ Status FileMonitoringTablePlugin::processEvents(
   return Status::success();
 }
 
-FileMonitoringTablePlugin::FileMonitoringTablePlugin(
+ObjAccessAttemptTablePlugin::ObjAccessAttemptTablePlugin(
     IZeekConfiguration &configuration, IZeekLogger &logger)
     : d(new PrivateData(configuration, logger)) {
   d->max_queued_row_count = d->configuration.maxQueuedRowCount();
 }
 
-Status FileMonitoringTablePlugin::generateRow(Row &row,
+Status ObjAccessAttemptTablePlugin::generateRow(Row &row,
                                             const WELEvent &event) {
   row = {};
 
@@ -149,7 +149,7 @@ Status FileMonitoringTablePlugin::generateRow(Row &row,
   }
 
   std::cout << "- - -" << "\n";
-  std::cout << event.event_id << " - File monitoring event" << "\n";
+  std::cout << event.event_id << " -Object access attempt event" << "\n";
 
   row["zeek_time"] = event.zeek_time;
   row["date_time"] = event.datetime;

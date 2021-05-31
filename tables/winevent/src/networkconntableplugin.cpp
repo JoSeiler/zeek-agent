@@ -179,24 +179,32 @@ Status NetworkConnTablePlugin::generateRow(Row &row,
     return Status::failure("Error: event data is illformed" + *e.what());
   }
 
+  std::int64_t proto = static_cast<std::int64_t>(strTree.get("EventData.Protocol", -1));
+  std::string saddr = strTree.get("EventData.SourceAddress", "");
+  std::int64_t sport = static_cast<std::int64_t>(strTree.get("EventData.SourcePort", -1));
+  std::string daddr = strTree.get("EventData.DestAddress", "");
+  std::int64_t dport = static_cast<std::int64_t>(strTree.get("EventData.DestPort", -1));
+
   row["process_id"] = static_cast<std::int64_t>(strTree.get("EventData.Protocol", -1));
   row["application"] = strTree.get("EventData.Application", "");
   row["direction"] = strTree.get("EventData.Direction", "");
-  row["source_address"] = strTree.get("EventData.SourceAddress", "");
-  row["source_port"] = static_cast<std::int64_t>(strTree.get("EventData.SourcePort", -1));
-  row["dest_address"] = strTree.get("EventData.DestAddress", "");
-  row["dest_port"] = static_cast<std::int64_t>(strTree.get("EventData.DestPort", -1));
-  row["protocol"] = static_cast<std::int64_t>(strTree.get("EventData.Protocol", -1));
+  row["source_address"] = saddr;
+  row["source_port"] = sport;
+  row["dest_address"] = daddr;
+  row["dest_port"] = dport;
+  row["protocol"] = proto;
   row["filter_rtid"] = static_cast<std::int64_t>(strTree.get("EventData.FilterRTID", -1));
   row["layer_name"] = strTree.get("EventData.LayerName", "");
   row["layer_rtid"] = static_cast<std::int64_t>(strTree.get("EventData.LayerRTID", -1));
   row["remote_user_id"] = strTree.get("EventData.RemoteUserID", "");
   row["remote_machine_id"] = strTree.get("EventData.RemoteMachineID", "");
 
-  //std::string proto = strTree.get("EventData.Protocol", "");
-
-  //if ( checkProtocol( proto ) {
-  //  std::cout << "supported";
+  // Check if Community ID can be calculated
+  //if (checkProtocol(proto)) {
+  //  std::cout << "supported" << proto << "\n";
+  //  //std::string commID = communityIDv1(saddr, daddr, sport, dport, proto);
+  //  std::string commID = communityIDv1("128.232.110.120", "66.35.250.204", 34855, 80, 6);
+  //  std::cout << "hash: " << commID << "\n";
   //}
 
   std::cout << "event.data: " << event.data << "\n";

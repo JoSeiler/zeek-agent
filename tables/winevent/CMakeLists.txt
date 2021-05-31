@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.16.3)
 
 function(zeekAgentTablesWinEvent)
 
+    # Include Boost
     set (BOOST_ROOT "C:/Program Files/libs/boost_1_75_0")
     set (BOOST_INCLUDEDIR "C:/Program Files/libs/boost_1_75_0")
     set (BOOST_LIBRARYDIR "C:/Program Files/libs/boost_1_75_0/lib")
@@ -19,6 +20,17 @@ function(zeekAgentTablesWinEvent)
         include_directories(${Boost_INCLUDE_DIRS})
         link_directories(${Boost_LIBRARY_DIRS})
     endif (NOT Boost_FOUND)
+
+    # Include OpenSSL
+    find_package(OpenSSL REQUIRED)
+
+    if (NOT OPENSSL_FOUND)
+        message(FATAL_ERROR "Fatal error: System could not find OpenSSL library.")
+    else()
+        message(STATUS "Setting up OpenSSL")
+        include_directories(${OPENSSL_INCLUDE_DIR})
+        link_directories(${OPENSSL_LIBRARIES})
+    endif (NOT OPENSSL_FOUND)
 
     add_library(zeek_winevent_tables
             include/zeek/winevtlogservicefactory.h
@@ -42,8 +54,8 @@ function(zeekAgentTablesWinEvent)
             src/processterminationtableplugin.h
             src/processterminationtableplugin.cpp
 
-            src/filemonitoringtableplugin.h
-            src/filemonitoringtableplugin.cpp
+            src/objaccessattempttableplugin.h
+            src/objaccessattempttableplugin.cpp
 
             src/regvalmodifiedtableplugin.h
             src/regvalmodifiedtableplugin.cpp

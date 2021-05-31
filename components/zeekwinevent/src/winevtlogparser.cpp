@@ -1,5 +1,5 @@
 
-#pragma warning( disable : 4702 ) // todo is there are solution to fix this issue?
+#pragma warning( disable : 4702 ) // todo is there a solution to fix this issue?
 
 #include <sstream>
 
