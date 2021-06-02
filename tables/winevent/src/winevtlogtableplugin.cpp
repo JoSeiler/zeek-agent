@@ -65,7 +65,7 @@ const WinevtlogTablePlugin::Schema &WinevtlogTablePlugin::schema() const {
       {"pid", IVirtualTable::ColumnType::Integer},
       {"tid", IVirtualTable::ColumnType::Integer},
       {"keywords", IVirtualTable::ColumnType::String},
-      {"data", IVirtualTable::ColumnType::String},
+      {"data", IVirtualTable::ColumnType::String}
   };
 
   return kTableSchema;
